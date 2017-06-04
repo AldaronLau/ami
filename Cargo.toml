@@ -12,6 +12,6 @@ documentation = "https://aldarons-tech.github.io/ami/target/doc/ami/"
 homepage = "https://aldarons-tech.github.io/ami/"
 repository = "https://github.com/aldarons-tech/ami"
 readme = "README.md"
-exclude = [ ]
+exclude = [ "examples/*", ".gitignore", "TODO" ]
 
 [dependencies]
