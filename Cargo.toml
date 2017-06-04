@@ -8,9 +8,9 @@ Aldaron's Memory Interface (A.M.I.) is a Rust library for manipulating memory.
 keywords = [ "Memory", "FFI", "Casting" ]
 categories = [ "no-std", "os", "data-structures", "memory-management" ]
 license = "MIT"
-documentation = ""
-homepage = ""
-repository = ""
+documentation = "https://aldarons-tech.github.io/ami/target/doc/ami/"
+homepage = "https://aldarons-tech.github.io/ami/"
+repository = "https://github.com/aldarons-tech/ami"
 readme = "README.md"
 exclude = [ ]
 
