@@ -8,13 +8,16 @@
 
 /// A type that represents a void* in C.
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct VoidPointer {
 	#[cfg(target_pointer_width = "32")]
 	native: u32,
 	#[cfg(target_pointer_width = "64")]
 	native: u64,
 }
+
+/// Equivalent of NULL in C.
+pub const NULL : VoidPointer = VoidPointer { native: 0 };
 
 /// A trait used for casting the void pointer to other pointer types.
 pub trait VoidPointerCast<T> {
