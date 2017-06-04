@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["VoidPointer","A type that represents a void* in C."]],"trait":[["VoidPointerCast","A trait used for casting the void pointer to other pointer types."]]});

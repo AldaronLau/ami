@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["repurpose","This module is for repurposing memory allocated by rust."],["size_of","This module is for getting the size of a variable."],["void_pointer","This module is for repurposing memory returned from or sent to FFI."]]});

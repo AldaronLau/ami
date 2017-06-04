@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["size_of","Get the size of type `T`, in bytes."]]});

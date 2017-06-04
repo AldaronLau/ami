@@ -1,4 +1,6 @@
-target/
-!target/doc/
 **/*.rs.bk
 Cargo.lock
+
+target/*
+!target/doc/
+target/doc/.lock
