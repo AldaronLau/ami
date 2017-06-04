@@ -1,2 +1,9 @@
-# asi
-Aldaron's Safe Interface (A.S.I.), a Rust library for safely casting void pointers, and other things usually unsafe in Rust.
+# Aldaron's Memory Interface ( ami )
+Aldaron's Memory Interface (A.M.I.) is a Rust library for manipulating memory.
+
+## Links
+Website: https://aldarons-tech.github.io/ami/
+
+Documentation: https://aldarons-tech.github.io/ami/target/doc/ami/
+
+Repository: https://github.com/aldarons-tech/ami
