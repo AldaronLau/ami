@@ -6,7 +6,11 @@
 
 //! This module is for repurposing memory returned from or sent to FFI.
 
-use core::ops::{Add, Sub, Not, BitAnd, BitOr, BitXor, Shr, Shl};
+use core::ops::{
+	Add, Sub, Not, BitAnd, BitOr, BitXor, Shr, Shl, Deref, DerefMut, Index,
+	IndexMut,
+};
+use core::marker::PhantomData;
 
 #[cfg(target_pointer_width = "32")]
 type NativePtr = u32;
@@ -21,6 +25,14 @@ pub struct VoidPointer {
 	native: NativePtr,
 }
 
+/// A type that represents a `T`* in C.
+#[repr(C)]
+#[derive(Copy, Clone, PartialEq)]
+pub struct TypePointer<T> where T: ?Sized {
+	native: NativePtr,
+	marker: PhantomData<T>,
+}
+
 /// Equivalent of NULL in C.
 pub const NULL : VoidPointer = VoidPointer { native: 0 };
 
@@ -30,10 +42,18 @@ impl VoidPointer {
 	pub fn as_int(&self) -> NativePtr {
 		self.native
 	}
+
+	#[inline(always)]
+	pub fn as_type<T>(&self) -> TypePointer<T> {
+		TypePointer {
+			native: self.native,
+			marker: PhantomData
+		}
+	}
 }
-/*
+
 /// A trait used for casting the void pointer to other pointer types.
-pub trait VoidPointerCast<T> {
+pub trait PointerCast<T> {
 	/// Cast a VoidPointer to a native pointer of any type.
 	#[inline(always)]
 	fn cast(&self) -> *mut T;
@@ -42,7 +62,7 @@ pub trait VoidPointerCast<T> {
 	fn from(pointer: *mut T) -> VoidPointer;
 }
 
-impl<T> VoidPointerCast<T> for VoidPointer {
+impl<T> PointerCast<T> for VoidPointer {
 	#[inline(always)]
 	fn from(pointer: *mut T) -> VoidPointer {
 		unsafe {
@@ -56,7 +76,23 @@ impl<T> VoidPointerCast<T> for VoidPointer {
 			*(&self as *const _ as *const *mut _)
 		}
 	}
-}*/
+}
+
+impl<T> PointerCast<T> for TypePointer<T> {
+	#[inline(always)]
+	fn from(pointer: *mut T) -> VoidPointer {
+		unsafe {
+			*(&pointer as *const *mut _ as *const _)
+		}
+	}
+
+	#[inline(always)]
+	fn cast(&self) -> *mut T {
+		unsafe {
+			*(&self.native as *const _ as *const *mut _)
+		}
+	}
+}
 
 impl Add<u32> for VoidPointer {
 	type Output = VoidPointer;
@@ -134,6 +170,78 @@ impl Not for VoidPointer {
 	fn not(self) -> VoidPointer {
 		VoidPointer {
 			native: !self.native
+		}
+	}
+}
+
+impl<T> Deref for TypePointer<T> {
+	type Target = T;
+
+	fn deref(&self) -> &Self::Target {
+		unsafe {
+			&*self.cast()
+		}
+	}
+}
+
+impl<T> DerefMut for TypePointer<T> {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		unsafe {
+			&mut *self.cast()
+		}
+	}
+}
+
+impl<T> Index<usize> for TypePointer<T> {
+	type Output = T;
+
+	fn index(&self, at: usize) -> &Self::Output {
+		unsafe {
+			&*self.cast().wrapping_offset(at as isize)
+		}
+	}
+}
+
+impl<T> IndexMut<usize> for TypePointer<T> {
+	fn index_mut(&mut self, at: usize) -> &mut Self::Output {
+		unsafe {
+			&mut *self.cast().wrapping_offset(at as isize)
+		}
+	}
+}
+
+impl Deref for VoidPointer {
+	type Target = u8;
+
+	fn deref(&self) -> &Self::Target {
+		unsafe {
+			&*self.cast()
+		}
+	}
+}
+
+impl DerefMut for VoidPointer {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		unsafe {
+			&mut *self.cast()
+		}
+	}
+}
+
+impl Index<usize> for VoidPointer {
+	type Output = u8;
+
+	fn index(&self, at: usize) -> &Self::Output {
+		unsafe {
+			&*self.cast().wrapping_offset(at as isize)
+		}
+	}
+}
+
+impl IndexMut<usize> for VoidPointer {
+	fn index_mut(&mut self, at: usize) -> &mut Self::Output {
+		unsafe {
+			&mut *self.cast().wrapping_offset(at as isize)
 		}
 	}
 }
