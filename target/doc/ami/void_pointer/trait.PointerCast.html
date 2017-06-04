@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `void_pointer` mod in crate `ami`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, void_pointer">
+    <meta name="description" content="API documentation for the Rust `PointerCast` trait in crate `ami`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, PointerCast">
 
-    <title>ami::void_pointer - Rust</title>
+    <title>ami::void_pointer::PointerCast - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc mod">
+<body class="rustdoc trait">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -29,7 +29,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='../index.html'>ami</a></p><script>window.sidebarCurrent = {name: 'void_pointer', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+        <p class='location'><a href='../index.html'>ami</a>::<wbr><a href='index.html'>void_pointer</a></p><script>window.sidebarCurrent = {name: 'PointerCast', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -44,44 +44,28 @@
     </nav>
 
     <section id='main' class="content">
-<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>ami</a>::<wbr><a class="mod" href=''>void_pointer</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>ami</a>::<wbr><a href='index.html'>void_pointer</a>::<wbr><a class="trait" href=''>PointerCast</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../src/ami/void_pointer.rs.html#7-248' title='goto source code'>[src]</a></span></h1>
-<div class='docblock'><p>This module is for repurposing memory returned from or sent to FFI.</p>
-</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
-<table>
-                       <tr class=' module-item'>
-                           <td><a class="struct" href="struct.TypePointer.html"
-                                  title='struct ami::void_pointer::TypePointer'>TypePointer</a></td>
-                           <td class='docblock-short'>
-                                <p>A type that represents a <code>T</code>* in C.</p>
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="struct" href="struct.VoidPointer.html"
-                                  title='struct ami::void_pointer::VoidPointer'>VoidPointer</a></td>
-                           <td class='docblock-short'>
-                                <p>A type that represents a void* in C.</p>
-                           </td>
-                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
-<table>
-                       <tr class=' module-item'>
-                           <td><a class="constant" href="constant.NULL.html"
-                                  title='constant ami::void_pointer::NULL'>NULL</a></td>
-                           <td class='docblock-short'>
-                                <p>Equivalent of NULL in C.</p>
-                           </td>
-                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
-<table>
-                       <tr class=' module-item'>
-                           <td><a class="trait" href="trait.PointerCast.html"
-                                  title='trait ami::void_pointer::PointerCast'>PointerCast</a></td>
-                           <td class='docblock-short'>
-                                <p>A trait used for casting the void pointer to other pointer types.</p>
-                           </td>
-                       </tr></table></section>
+               </span><a class='srclink' href='../../src/ami/void_pointer.rs.html#57-64' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait PointerCast&lt;T&gt; {
+    fn <a href='#tymethod.cast' class='fnname'>cast</a>(&amp;self) -&gt; *mut T;
+    fn <a href='#tymethod.from' class='fnname'>from</a>(pointer: *mut T) -&gt; <a class="struct" href="../../ami/void_pointer/struct.VoidPointer.html" title="struct ami::void_pointer::VoidPointer">VoidPointer</a>;
+}</pre><div class='docblock'><p>A trait used for casting the void pointer to other pointer types.</p>
+</div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.cast' class='method'><span id='cast.v' class='invisible'><code>fn <a href='#tymethod.cast' class='fnname'>cast</a>(&amp;self) -&gt; *mut T</code></span></h3><div class='docblock'><p>Cast a VoidPointer to a native pointer of any type.</p>
+</div><h3 id='tymethod.from' class='method'><span id='from.v' class='invisible'><code>fn <a href='#tymethod.from' class='fnname'>from</a>(pointer: *mut T) -&gt; <a class="struct" href="../../ami/void_pointer/struct.VoidPointer.html" title="struct ami::void_pointer::VoidPointer">VoidPointer</a></code></span></h3><div class='docblock'><p>Cast a native pointer of any type to a VoidPointer.</p>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl&lt;T&gt; PointerCast&lt;T&gt; for <a class="struct" href="../../ami/void_pointer/struct.VoidPointer.html" title="struct ami::void_pointer::VoidPointer">VoidPointer</a></code></li>
+<li><code>impl&lt;T&gt; PointerCast&lt;T&gt; for <a class="struct" href="../../ami/void_pointer/struct.TypePointer.html" title="struct ami::void_pointer::TypePointer">TypePointer</a>&lt;T&gt;</code></li>
+</ul><script type="text/javascript" async
+                         src="../../implementors/ami/void_pointer/trait.PointerCast.js">
+                 </script></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>

@@ -43,6 +43,7 @@ impl VoidPointer {
 		self.native
 	}
 
+	/// Cast to a TypePointer for indexing or dereferencing.
 	#[inline(always)]
 	pub fn as_type<T>(&self) -> TypePointer<T> {
 		TypePointer {
@@ -213,7 +214,7 @@ impl<T> IndexMut<usize> for TypePointer<T> {
 impl Deref for VoidPointer {
 	type Target = u8;
 
-	fn deref(&self) -> &Self::Target {
+	fn deref(&self) -> &u8 {
 		unsafe {
 			&*self.cast()
 		}
@@ -221,7 +222,7 @@ impl Deref for VoidPointer {
 }
 
 impl DerefMut for VoidPointer {
-	fn deref_mut(&mut self) -> &mut Self::Target {
+	fn deref_mut(&mut self) -> &mut u8 {
 		unsafe {
 			&mut *self.cast()
 		}
@@ -231,7 +232,7 @@ impl DerefMut for VoidPointer {
 impl Index<usize> for VoidPointer {
 	type Output = u8;
 
-	fn index(&self, at: usize) -> &Self::Output {
+	fn index(&self, at: usize) -> &u8 {
 		unsafe {
 			&*self.cast().wrapping_offset(at as isize)
 		}
@@ -239,7 +240,7 @@ impl Index<usize> for VoidPointer {
 }
 
 impl IndexMut<usize> for VoidPointer {
-	fn index_mut(&mut self, at: usize) -> &mut Self::Output {
+	fn index_mut(&mut self, at: usize) -> &mut u8 {
 		unsafe {
 			&mut *self.cast().wrapping_offset(at as isize)
 		}
