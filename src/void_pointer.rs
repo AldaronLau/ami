@@ -11,6 +11,7 @@ use core::ops::{
 	IndexMut,
 };
 use core::marker::PhantomData;
+use core::fmt::{ Display, Result, Formatter };
 
 #[cfg(target_pointer_width = "32")]
 type NativePtr = u32;
@@ -244,5 +245,11 @@ impl IndexMut<usize> for VoidPointer {
 		unsafe {
 			&mut *self.cast().wrapping_offset(at as isize)
 		}
+	}
+}
+
+impl Display for VoidPointer {
+	fn fmt(&self, f: &mut Formatter) -> Result {
+		write!(f, "{:x}", (*self).native)
 	}
 }
