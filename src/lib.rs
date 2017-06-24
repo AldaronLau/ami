@@ -12,3 +12,7 @@
 pub mod void_pointer;
 pub mod repurpose;
 pub mod size_of;
+pub mod boxed;
+pub mod vec;
+
+mod heap;

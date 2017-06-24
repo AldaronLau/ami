@@ -12,6 +12,7 @@ use core::ops::{
 };
 use core::marker::PhantomData;
 use core::fmt::{ Display, Result, Formatter };
+use core::ptr;
 
 #[cfg(target_pointer_width = "32")]
 type NativePtr = u32;
@@ -34,6 +35,9 @@ pub struct TypePointer<T> where T: ?Sized {
 	marker: PhantomData<T>,
 }
 
+unsafe impl<T: Send> Send for TypePointer<T> {}
+unsafe impl<T: Sync> Sync for TypePointer<T> {}
+
 /// Equivalent of NULL in C.
 pub const NULL : VoidPointer = VoidPointer { native: 0 };
 
@@ -51,6 +55,30 @@ impl VoidPointer {
 			native: self.native,
 			marker: PhantomData
 		}
+	}
+}
+
+impl<T> TypePointer<T> {
+	/// Inverse of `VoidPointer::as_type<T>()`
+	#[inline(always)]
+	pub fn as_void(&self) -> VoidPointer {
+		VoidPointer {
+			native: self.native
+		}
+	}
+
+	#[inline(always)]
+	pub unsafe fn copy_index(&self, index: usize) -> T {
+		ptr::read(&self[index])
+	}
+
+	#[inline(always)]
+	pub fn swap_index(&mut self, index: usize, value: T) -> T {
+		let read = unsafe { self.copy_index(index) };
+
+		self[index] = value;
+
+		read
 	}
 }
 
@@ -99,6 +127,7 @@ impl<T> PointerCast<T> for TypePointer<T> {
 impl Add<u32> for VoidPointer {
 	type Output = VoidPointer;
 
+	#[inline(always)]
 	fn add(self, other: u32) -> VoidPointer {
 		VoidPointer {
 			native: self.native + (other as NativePtr)
@@ -109,6 +138,7 @@ impl Add<u32> for VoidPointer {
 impl Sub<u32> for VoidPointer {
 	type Output = VoidPointer;
 
+	#[inline(always)]
 	fn sub(self, other: u32) -> VoidPointer {
 		VoidPointer {
 			native: self.native - (other as NativePtr)
@@ -119,6 +149,7 @@ impl Sub<u32> for VoidPointer {
 impl BitAnd<u32> for VoidPointer {
 	type Output = VoidPointer;
 	
+	#[inline(always)]
 	fn bitand(self, other: u32) -> VoidPointer {
 		VoidPointer {
 			native: (self.native as u32 & other) as NativePtr
@@ -128,7 +159,8 @@ impl BitAnd<u32> for VoidPointer {
 
 impl BitOr<u32> for VoidPointer {
 	type Output = VoidPointer;
-	
+
+	#[inline(always)]
 	fn bitor(self, other: u32) -> VoidPointer {
 		VoidPointer {
 			native: (self.native as u32 | other) as NativePtr
@@ -138,7 +170,8 @@ impl BitOr<u32> for VoidPointer {
 
 impl BitXor<u32> for VoidPointer {
 	type Output = VoidPointer;
-	
+
+	#[inline(always)]
 	fn bitxor(self, other: u32) -> VoidPointer {
 		VoidPointer {
 			native: (self.native as u32 ^ other) as NativePtr
@@ -148,7 +181,8 @@ impl BitXor<u32> for VoidPointer {
 
 impl Shr<usize> for VoidPointer {
 	type Output = VoidPointer;
-	
+
+	#[inline(always)]
 	fn shr(self, rhs: usize) -> VoidPointer {
 		VoidPointer {
 			native: self.native >> rhs
@@ -158,7 +192,8 @@ impl Shr<usize> for VoidPointer {
 
 impl Shl<usize> for VoidPointer {
 	type Output = VoidPointer;
-	
+
+	#[inline(always)]
 	fn shl(self, rhs: usize) -> VoidPointer {
 		VoidPointer {
 			native: self.native << rhs
@@ -168,7 +203,8 @@ impl Shl<usize> for VoidPointer {
 
 impl Not for VoidPointer {
 	type Output = VoidPointer;
-	
+
+	#[inline(always)]
 	fn not(self) -> VoidPointer {
 		VoidPointer {
 			native: !self.native
@@ -179,6 +215,7 @@ impl Not for VoidPointer {
 impl<T> Deref for TypePointer<T> {
 	type Target = T;
 
+	#[inline(always)]
 	fn deref(&self) -> &Self::Target {
 		unsafe {
 			&*self.cast()
@@ -187,6 +224,7 @@ impl<T> Deref for TypePointer<T> {
 }
 
 impl<T> DerefMut for TypePointer<T> {
+	#[inline(always)]
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		unsafe {
 			&mut *self.cast()
@@ -197,6 +235,7 @@ impl<T> DerefMut for TypePointer<T> {
 impl<T> Index<usize> for TypePointer<T> {
 	type Output = T;
 
+	#[inline(always)]
 	fn index(&self, at: usize) -> &Self::Output {
 		unsafe {
 			&*self.cast().wrapping_offset(at as isize)
@@ -205,6 +244,7 @@ impl<T> Index<usize> for TypePointer<T> {
 }
 
 impl<T> IndexMut<usize> for TypePointer<T> {
+	#[inline(always)]
 	fn index_mut(&mut self, at: usize) -> &mut Self::Output {
 		unsafe {
 			&mut *self.cast().wrapping_offset(at as isize)
@@ -215,6 +255,7 @@ impl<T> IndexMut<usize> for TypePointer<T> {
 impl Deref for VoidPointer {
 	type Target = u8;
 
+	#[inline(always)]
 	fn deref(&self) -> &u8 {
 		unsafe {
 			&*self.cast()
@@ -223,6 +264,7 @@ impl Deref for VoidPointer {
 }
 
 impl DerefMut for VoidPointer {
+	#[inline(always)]
 	fn deref_mut(&mut self) -> &mut u8 {
 		unsafe {
 			&mut *self.cast()
@@ -233,6 +275,7 @@ impl DerefMut for VoidPointer {
 impl Index<usize> for VoidPointer {
 	type Output = u8;
 
+	#[inline(always)]
 	fn index(&self, at: usize) -> &u8 {
 		unsafe {
 			&*self.cast().wrapping_offset(at as isize)
@@ -241,6 +284,7 @@ impl Index<usize> for VoidPointer {
 }
 
 impl IndexMut<usize> for VoidPointer {
+	#[inline(always)]
 	fn index_mut(&mut self, at: usize) -> &mut u8 {
 		unsafe {
 			&mut *self.cast().wrapping_offset(at as isize)
@@ -249,6 +293,7 @@ impl IndexMut<usize> for VoidPointer {
 }
 
 impl Display for VoidPointer {
+	#[inline(always)]
 	fn fmt(&self, f: &mut Formatter) -> Result {
 		write!(f, "{:x}", (*self).native)
 	}
