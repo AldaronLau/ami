@@ -1,6 +1,6 @@
 [package]
 name = "ami"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
 description = """
 Aldaron's Memory Interface (A.M.I.) is a Rust library for manipulating memory.

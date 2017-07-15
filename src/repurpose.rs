@@ -6,6 +6,7 @@
 
 //! This module is for repurposing memory allocated by rust.
 
+#[cfg(debug_assertions)]
 use size_of::*;
 
 #[cfg(debug_assertions)]
