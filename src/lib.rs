@@ -7,6 +7,10 @@
 //! Aldaron's Memory Interface (A.M.I.) is a Rust library for manipulating
 //! memory.
 
+#![doc(html_logo_url = "http://at.plopgrizzly.tech/ami/icon.png",
+       html_favicon_url = "http://at.plopgrizzly.tech/ami/icon.png",
+       html_root_url = "http://at.plopgrizzly.tech/ami/")]
+
 #![no_std] // No Standard Library.
 
 pub mod void_pointer;
