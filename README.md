@@ -1,7 +1,9 @@
-# Aldaron's Memory Interface ( ami )
-Aldaron's Memory Interface (A.M.I.) is a Rust library for manipulating memory.
+<img src="http://at.plopgrizzly.tech/ami/banner.png" alt="Aldaron's Memory Interface (ami)" width="100%">
+
+ Aldaron's Memory Interface is a Rust library for manipulating memory.
 
 ## Links
-* [Website](https://aldarons-tech.github.io/ami/)
-* [Documentation](https://aldarons-tech.github.io/ami/target/doc/ami/)
-* [Repository](https://github.com/aldarons-tech/ami)
+* [Website](http://at.plopgrizzly.tech/ami/)
+* [Cargo](https://crates.io/crates/ami/)
+* [Documentation](http://at.plopgrizzly.tech/docs/ami/)
+* [Tutorial](http://at.plopgrizzly.tech/demos/ami)
