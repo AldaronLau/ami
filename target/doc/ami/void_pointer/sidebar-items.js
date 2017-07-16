@@ -1,1 +1,0 @@
-initSidebarItems({"constant":[["NULL","Equivalent of NULL in C."]],"struct":[["TypePointer","A type that represents a `T`* in C."],["VoidPointer","A type that represents a void* in C."]],"trait":[["PointerCast","A trait used for casting the void pointer to other pointer types."]]});
