@@ -15,3 +15,4 @@ readme = "README.md"
 exclude = [ "examples/*", ".gitignore", "TODO" ]
 
 [dependencies]
+libc = "0.2.26"

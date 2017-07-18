@@ -4,9 +4,10 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
+//! A growable array on the heap.
+
 use void_pointer::*;
 use size_of::*;
-use heap;
 
 pub struct Vec<T> {
 	ptr: TypePointer<T>,
@@ -79,10 +80,13 @@ impl<T> Vec<T> {
 	// Realloc ptr from capacity.
 	#[inline(always)]
 	fn realloc(&mut self) {
-		let ptr = self.ptr.as_void();
+		let mut ptr = self.ptr.as_void();
 		let bytes = self.cap * size_of::<T>();
 
-		self.ptr = heap::alloc(ptr, bytes).as_type::<T>();
+		self.ptr = unsafe {
+			::heap::resize(&mut ptr.as_ptr(), bytes);
+			ptr.as_type::<T>()
+		};
 	}
 }
 
@@ -90,7 +94,7 @@ impl<T> Drop for Vec<T> {
 	#[inline(always)]
 	fn drop(&mut self) {
 		if self.cap != 0 {
-			heap::alloc(self.ptr.as_void(), 0);
+			unsafe { ::heap::drop(*(self.ptr.as_void().as_ptr())) };
 		}
 	}
 }

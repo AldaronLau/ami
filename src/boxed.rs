@@ -4,10 +4,13 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
-use heap;
+//! Dynamic memory management.
+
 use size_of;
 use void_pointer::*;
+use heap;
 
+/// A pointer to type `T` on the heap.
 pub struct Box<T>(TypePointer<T>);
 
 impl<T> Box<T> {
@@ -15,7 +18,7 @@ impl<T> Box<T> {
 	/// Doesn't actually allocate if `T` is zero-sized.
 	#[inline(always)]
 	pub fn from(x: T) -> Box<T> {
-		let heap = heap::alloc(NULL, size_of::size_of::<T>());
+		let heap = unsafe { VoidPointer::new(size_of::size_of::<T>()) };
 		let mut tptr = heap.as_type();
 
 		*tptr = x;
@@ -33,6 +36,8 @@ impl<T> Box<T> {
 impl<T> Drop for Box<T> {
 	#[inline(always)]
 	fn drop(&mut self) {
-		heap::alloc(self.0.as_void(), 0);
+		unsafe {
+			heap::drop(*(self.0.as_void().as_ptr()));
+		}
 	}
 }
