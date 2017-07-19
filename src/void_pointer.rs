@@ -43,7 +43,7 @@ impl VoidPointer {
 	/// has to be free'd.
 	#[inline(always)]
 	pub unsafe fn new(n: usize) -> VoidPointer {
-		VoidPointer(*(repurpose(&mut ::heap::allocate(n))))
+		VoidPointer(*(repurpose(&mut ::heap_ffi::allocate(n))))
 	}
 
 	/// Return the pointer as an integer.
@@ -62,7 +62,7 @@ impl VoidPointer {
 	}
 	
 	#[inline(always)]
-	pub fn as_ptr(&mut self) -> &mut *mut ::void {
+	pub fn as_ptr(&mut self) -> &mut *mut ::Void {
 		::repurpose::repurpose(&mut self.0)
 	}
 }

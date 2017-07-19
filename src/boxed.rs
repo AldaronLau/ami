@@ -8,7 +8,7 @@
 
 use size_of;
 use void_pointer::*;
-use heap;
+use heap_ffi;
 
 /// A pointer to type `T` on the heap.
 pub struct Box<T>(TypePointer<T>);
@@ -37,7 +37,7 @@ impl<T> Drop for Box<T> {
 	#[inline(always)]
 	fn drop(&mut self) {
 		unsafe {
-			heap::drop(*(self.0.as_void().as_ptr()));
+			heap_ffi::drop(*(self.0.as_void().as_ptr()));
 		}
 	}
 }

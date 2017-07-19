@@ -13,6 +13,3 @@ homepage = "https://aldarons-tech.github.io/ami/"
 repository = "https://github.com/aldarons-tech/ami"
 readme = "README.md"
 exclude = [ "examples/*", ".gitignore", "TODO" ]
-
-[dependencies]
-libc = "0.2.26"

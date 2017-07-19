@@ -6,24 +6,30 @@
 
 //! A growable array on the heap.
 
-use void_pointer::*;
+use core::ptr;
+use core::marker::PhantomData;
+
+use NULL;
+use Void;
+use UnsafeData;
 use size_of::*;
 
 pub struct Vec<T> {
-	ptr: TypePointer<T>,
+	ptr: UnsafeData,
 	cap: usize,
 	len: usize,
+	marker: PhantomData<T>,
 }
 
 impl<T> Vec<T> {
 	/// Create an empty `Vec<T>`.
 	#[inline(always)]
 	pub fn new() -> Vec<T> {
-		let ptr = NULL.as_type::<T>();
+		let ptr = NULL;
 		let cap = 0;
 		let len = 0;
 
-		Vec { ptr, cap, len }
+		Vec { ptr, cap, len, marker: PhantomData }
 	}
 
 	/// Append an element at the end of the `Vec<T>`.
@@ -35,7 +41,9 @@ impl<T> Vec<T> {
 		}
 
 		// Initialize the uninitialized.
-		self.ptr[self.len] = elem;
+		unsafe {
+			self.ptr.as_slice(self.len + 1)[self.len] = elem;
+		}
 
 		// Length has increased by one.
 		self.len += 1;
@@ -49,12 +57,16 @@ impl<T> Vec<T> {
 			return None;
 		}
 
+		let slice_len = self.len;
+
 		// Length has decreased by one.
 		self.len -= 1;
 
 		// This is safe because we're moving the value out of the vector
 		// The copied value is out of bounds, so it's a move.
-		Some(unsafe { self.ptr.copy_index(self.len) })
+		unsafe {
+			Some(ptr::read(&self.ptr.as_slice(slice_len)[self.len]))
+		}
 	}
 
 	// This will add capacity if len > cap
@@ -80,12 +92,12 @@ impl<T> Vec<T> {
 	// Resize ptr from capacity.
 	#[inline(always)]
 	fn resize(&mut self) {
-		let mut ptr = self.ptr.as_void();
+		let mut ptr = unsafe { self.ptr.as_mut_ptr() };
 		let bytes = self.cap * size_of::<T>();
 
 		self.ptr = unsafe {
-			::heap::resize(&mut ptr.as_ptr(), bytes);
-			ptr.as_type::<T>()
+			Void::resize(&mut ptr, bytes);
+			UnsafeData::new(ptr)
 		};
 	}
 }
@@ -94,35 +106,12 @@ impl<T> Drop for Vec<T> {
 	#[inline(always)]
 	fn drop(&mut self) {
 		if self.cap != 0 {
-			unsafe { ::heap::drop(*(self.ptr.as_void().as_ptr())) };
+			unsafe {
+				Void::drop(self.ptr.as_mut_ptr());
+			}
 		}
 	}
 }
-
-/*impl<T> IntoIterator for Vec<T> where T: ?Sized {
-	type Item = T;
-	type IntoIter = Iterator<Item = T>;
-
-	fn into_iter(self) -> Self::IntoIter {
-		self
-	}
-}*/
-
-/*impl Iterator for Vec<T> {
-	type Item = T;
-
-	fn next(&mut self) -> Option<T> {
-		// increment our count. This is why we started at zero.
-		self.count += 1;
-
-		// check to see if we've finished counting or not.
-		if self.count < 6 {
-			Some(self.count)
-		} else {
-			None
-		}
-	}
-}*/
 
 impl<T> ::core::fmt::Display for Vec<T> where T: ::core::fmt::Display {
 	#[inline(always)]
@@ -149,7 +138,9 @@ impl<T> ::core::ops::Deref for Vec<T> {
 	#[inline(always)]
 	fn deref(&self) -> &Self::Target {
 		unsafe {
-			::core::slice::from_raw_parts(self.ptr.cast(), self.len)
+			let ptr = self.ptr.as_ptr();
+
+			::core::slice::from_raw_parts(ptr, self.len)
 		}
 	}
 }
@@ -157,9 +148,9 @@ impl<T> ::core::ops::Deref for Vec<T> {
 impl<T> ::core::ops::DerefMut for Vec<T> {
 	#[inline(always)]
 	fn deref_mut(&mut self) -> &mut Self::Target {
-		let ptr = self.ptr.cast();
-
 		unsafe {
+			let ptr = self.ptr.as_mut_ptr();
+
 			::core::slice::from_raw_parts_mut(ptr, self.len)
 		}
 	}
