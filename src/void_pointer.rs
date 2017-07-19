@@ -11,8 +11,6 @@ use core::marker::PhantomData;
 use core::fmt::{ Display, Result, Formatter };
 use core::ptr;
 
-use repurpose::*;
-
 #[cfg(target_pointer_width = "32")]
 type NativePtr = u32;
 
@@ -39,13 +37,6 @@ unsafe impl<T: Sync> Sync for TypePointer<T> {}
 pub const NULL : VoidPointer = VoidPointer(0);
 
 impl VoidPointer {
-	/// Allocate `n` bytes on the stack.  This is unsafe because it still
-	/// has to be free'd.
-	#[inline(always)]
-	pub unsafe fn new(n: usize) -> VoidPointer {
-		VoidPointer(*(repurpose(&mut ::heap_ffi::allocate(n))))
-	}
-
 	/// Return the pointer as an integer.
 	#[inline(always)]
 	pub fn as_int(&self) -> NativePtr {
@@ -63,7 +54,9 @@ impl VoidPointer {
 	
 	#[inline(always)]
 	pub fn as_ptr(&mut self) -> &mut *mut ::Void {
-		::repurpose::repurpose(&mut self.0)
+		unsafe {
+			::RawData::transmute(&mut self.0)
+		}
 	}
 }
 

@@ -6,14 +6,14 @@
 
 //! This module is for repurposing memory allocated by rust.
 
+use size_of;
+
 /// Repurpose memory of type `T` as memory of type `U`.  `input` is the a
 /// reference to the memory to repurpose.  Returns the repurposed memory.
 #[inline(always)]
 pub fn repurpose<T, U>(input: &mut T) -> &mut U {
 	// Check if safe, if no --release flag.
 	if cfg!(debug_assertions) {
-		use size_of::*;
-
 		let sizet = size_of::<T>();
 		let sizeu = size_of::<U>();
 		if sizet != sizeu {

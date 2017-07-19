@@ -1,15 +1,15 @@
 [package]
 name = "ami"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
 description = """
-Aldaron's Memory Interface (A.M.I.) is a Rust library for manipulating memory.
+Aldaron's Memory Interface is a library for manipulating memory.
 """
-keywords = [ "Memory", "FFI", "Casting" ]
+keywords = [ "Memory", "FFI", "Casting", "Vec" ]
 categories = [ "no-std", "os", "data-structures", "memory-management" ]
 license = "MIT"
-documentation = "https://aldarons-tech.github.io/ami/target/doc/ami/"
-homepage = "https://aldarons-tech.github.io/ami/"
+documentation = "http://at.plopgrizzly.tech/docs/ami/"
+homepage = "http://at.plopgrizzly.tech/ami/"
 repository = "https://github.com/aldarons-tech/ami"
 readme = "README.md"
-exclude = [ "examples/*", ".gitignore", "TODO" ]
+exclude = [ "examples/*", ".gitignore", "TODO", "icon.png" ]

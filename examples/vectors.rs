@@ -6,7 +6,7 @@
 
 extern crate ami;
 
-use ami::vec::Vec;
+use ami::Vec;
 
 fn main() -> () {
 	let mut vec : Vec<i32> = Vec::new();

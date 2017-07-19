@@ -5,6 +5,13 @@
 // Licensed under the MIT LICENSE
 
 use core::ptr;
+use core::marker::PhantomData;
+
+#[cfg(target_pointer_width = "32")]
+type NativePtr = u32;
+
+#[cfg(target_pointer_width = "64")]
+type NativePtr = u64;
 
 /// Void type for C's `void *`.  Use as `*mut Void`.
 #[repr(u8)]
@@ -15,16 +22,14 @@ pub enum Void {
 	__DontUseMe2,
 }
 
-/// An unsafe wrapper around a void pointer.
-pub struct UnsafeData(
-	#[cfg(target_pointer_width = "32")]
-	u32,
-	#[cfg(target_pointer_width = "64")]
-	u64,
-);
+/// An unsafe wrapper around a Void pointer.
+pub struct UnsafeData(NativePtr);
 
 /// A safe wrapper around a void pointer.
 pub struct RawData(UnsafeData);
+
+/// A safe wrapper around a `T` pointer.
+pub struct HeapData<T>(RawData, PhantomData<T>);
 
 /// Represents a NULL pointer.  To use with ffi: `NULL.as_ptr()`
 pub const NULL : UnsafeData = UnsafeData(0);
@@ -38,14 +43,18 @@ impl UnsafeData {
 
 	/// Get a raw pointer from UnsafeData.
 	#[inline(always)]
-	pub unsafe fn as_ptr<T>(&self) -> *const T {
-		RawData::transmute(self.0)
+	pub fn as_ptr<T>(&self) -> *const T {
+		unsafe {
+			RawData::transmute(self.0)
+		}
 	}
 
-	/// Get a raw pointer from UnsafeData.
+	/// Get an unsafe mutable raw pointer from UnsafeData.
 	#[inline(always)]
-	pub unsafe fn as_mut_ptr<T>(&mut self) -> *mut T {
-		RawData::transmute(self.0)
+	pub fn as_mut_ptr<T>(&mut self) -> *mut T {
+		unsafe {
+			RawData::transmute(self.0)
+		}
 	}
 
 	/// Get a slice from UnsafeData.
@@ -55,11 +64,16 @@ impl UnsafeData {
 	}
 }
 
+// TODO: Only malloc, realloc and free if have libc, alternatives when don't.
 impl Void {
 	/// Equivalent to a call to `malloc()`
 	#[inline(always)]
 	pub unsafe fn new(size: usize) -> *mut Void {
-		::heap_ffi::allocate(size)
+		extern "C" {
+			fn malloc(n: usize) -> *mut Void;
+		}
+
+		malloc(size)
 	}
 
 	/// Equivalent to a call to `realloc()`
@@ -68,13 +82,22 @@ impl Void {
 		if size == 0 {
 			panic!("Error: Can't call resize() when size == 0.");
 		}
-		::heap_ffi::resize(pointer, size)
+
+		extern "C" {
+			fn realloc(pointer: *mut Void, n: usize) -> *mut Void;
+		}
+
+		*pointer = realloc(*pointer, size);
 	}
 
 	/// Equivalent to a call to `free()`
 	#[inline(always)]
 	pub unsafe fn drop(pointer: *mut Void) -> () {
-		::heap_ffi::drop(pointer)
+		extern "C" {
+			fn free(pointer: *mut Void) -> ();
+		}
+
+		free(pointer)
 	}
 }
 
@@ -89,7 +112,7 @@ impl RawData {
 	/// uninitialized.
 	#[inline(always)]
 	pub unsafe fn resize(&mut self, size: usize) -> () {
-		Void::resize(&mut self.as_ptr(), size);
+		Void::resize(&mut self.as_mut_ptr(), size);
 	}
 
 	/// Copy bits ( raw data ) from T to U.  Make sure types are same size.
@@ -99,11 +122,15 @@ impl RawData {
 		ptr::read(&from as *const _ as *const U)
 	}
 
-	/// Convert the RawData into a raw pointer.  This is unsafe because
-	/// RawData isn't consumed, so there could be refrences to the same data
-	/// that iterpret it as different types.
+	/// Convert the RawData into a raw pointer.
 	#[inline(always)]
-	pub unsafe fn as_ptr<T>(&mut self) -> *mut T {
+	pub fn as_ptr<T>(&self) -> *const T {
+		self.0.as_ptr()
+	}
+
+	/// Convert the RawData into an unsafe mutable raw pointer.
+	#[inline(always)]
+	pub fn as_mut_ptr<T>(&mut self) -> *mut T {
 		self.0.as_mut_ptr()
 	}
 }
@@ -111,6 +138,46 @@ impl RawData {
 impl Drop for RawData {
 	#[inline(always)]
 	fn drop(&mut self) {
-		unsafe { Void::drop(self.as_ptr()); }
+		unsafe { Void::drop(self.as_mut_ptr()); }
 	}
 }
+
+impl<T> HeapData<T> {
+	/// Allocate space for `size` elements on the heap.  The memory is
+	/// automatically free'd.
+	#[inline(always)]
+	pub fn new(size: usize) -> HeapData<T> {
+		HeapData(RawData::new(size), PhantomData)
+	}
+
+	/// Allocates memory on the heap and then places `x` into it.
+	/// Doesn't actually allocate if `T` is zero-sized.
+	#[inline(always)]
+	pub fn from(x: T) -> HeapData<T> {
+		let mut heap = HeapData::new(1);
+
+		*heap = x;
+
+		heap
+	}
+}
+
+impl<T> ::core::ops::Deref for HeapData<T> {
+	type Target = T;
+
+	#[inline(always)]
+	fn deref(&self) -> &Self::Target {
+		unsafe { &*self.0.as_ptr() }
+	}
+}
+
+impl<T> ::core::ops::DerefMut for HeapData<T> {
+	#[inline(always)]
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		unsafe { &mut *self.0.as_mut_ptr() }
+	}
+}
+
+//	#[inline(always)]
+//	pub fn 	
+// }
