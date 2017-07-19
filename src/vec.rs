@@ -31,7 +31,7 @@ impl<T> Vec<T> {
 	pub fn push(&mut self, elem: T) -> () {
 		// If it needs to grow, re-allocate.
 		if self.grow() {
-			self.realloc();
+			self.resize();
 		}
 
 		// Initialize the uninitialized.
@@ -77,9 +77,9 @@ impl<T> Vec<T> {
 		}
 	}
 
-	// Realloc ptr from capacity.
+	// Resize ptr from capacity.
 	#[inline(always)]
-	fn realloc(&mut self) {
+	fn resize(&mut self) {
 		let mut ptr = self.ptr.as_void();
 		let bytes = self.cap * size_of::<T>();
 
@@ -99,11 +99,47 @@ impl<T> Drop for Vec<T> {
 	}
 }
 
-impl<T> ::core::fmt::Display for Vec<T> {
+/*impl<T> IntoIterator for Vec<T> where T: ?Sized {
+	type Item = T;
+	type IntoIter = Iterator<Item = T>;
+
+	fn into_iter(self) -> Self::IntoIter {
+		self
+	}
+}*/
+
+/*impl Iterator for Vec<T> {
+	type Item = T;
+
+	fn next(&mut self) -> Option<T> {
+		// increment our count. This is why we started at zero.
+		self.count += 1;
+
+		// check to see if we've finished counting or not.
+		if self.count < 6 {
+			Some(self.count)
+		} else {
+			None
+		}
+	}
+}*/
+
+impl<T> ::core::fmt::Display for Vec<T> where T: ::core::fmt::Display {
 	#[inline(always)]
 	fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-		write!(f, "{{")?;
-		write!(f, "}}")
+		let mut comma = false;
+		write!(f, "[")?;
+
+		for i in self.iter() {
+			if comma {
+				write!(f, ", ")?;
+			} else {
+				comma = true;
+			}
+
+			write!(f, "{}", i)?;
+		}
+		write!(f, "]")
 	}
 }
 
