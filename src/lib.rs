@@ -6,9 +6,13 @@
 
 //! Aldaron's Memory Interface is a library for manipulating memory.
 
-#![doc(html_logo_url = "http://at.plopgrizzly.tech/ami/icon.png",
-       html_favicon_url = "http://at.plopgrizzly.tech/ami/icon.png",
-       html_root_url = "http://at.plopgrizzly.tech/ami/")]
+#![doc(
+	html_logo_url =
+		"https://rawgit.com/aldarons-tech/ami/master/res/icon.png",
+	html_favicon_url =
+		"https://rawgit.com/aldarons-tech/ami/master/res/symbol.svg",
+	html_root_url = "http://at.plopgrizzly.tech/ami/"
+)]
 
 #![no_std] // No Standard Library.
 
