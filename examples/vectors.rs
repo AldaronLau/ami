@@ -1,8 +1,8 @@
-// vectors.rs
-// Aldaron's Memory Interface ( ami )
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Aldaron's Memory Interface
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// examples/vectors.rs
 
 extern crate ami;
 

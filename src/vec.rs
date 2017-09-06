@@ -1,34 +1,30 @@
-// vec.rs
-// Aldaron's Memory Interface ( ami )
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Aldaron's Memory Interface
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// src/vec.rs
 
 use core::ptr;
-use core::marker::PhantomData;
 
-use NULL;
-use Void;
-use UnsafeData;
 use size_of;
+use HeapMem;
 
 /// A growable array on the heap.
 pub struct Vec<T> {
-	ptr: UnsafeData,
+	ptr: HeapMem<T>,
 	cap: usize,
 	len: usize,
-	marker: PhantomData<T>,
 }
 
 impl<T> Vec<T> {
 	/// Create an empty `Vec<T>`.
 	#[inline(always)]
 	pub fn new() -> Vec<T> {
-		let ptr = NULL;
+		let ptr = HeapMem::new(0);
 		let cap = 0;
 		let len = 0;
 
-		Vec { ptr, cap, len, marker: PhantomData }
+		Vec { ptr, cap, len }
 	}
 
 	/// Append an element at the end of the `Vec<T>`.
@@ -73,7 +69,7 @@ impl<T> Vec<T> {
 	/// Get a raw pointer to the `Vec<T>`'s Buffer.
 	#[inline(always)]
 	pub fn as_ptr(&self) -> *const T {
-		self.ptr.as_ptr()
+		self.ptr.as_ptr() as *const _
 	}
 
 	// This will add capacity if len > cap
@@ -99,24 +95,7 @@ impl<T> Vec<T> {
 	// Resize ptr from capacity.
 	#[inline(always)]
 	fn resize(&mut self) {
-		let mut ptr = self.ptr.as_mut_ptr();
-		let bytes = self.cap * size_of::<T>();
-
-		self.ptr = unsafe {
-			Void::resize(&mut ptr, bytes);
-			UnsafeData::new(ptr)
-		};
-	}
-}
-
-impl<T> Drop for Vec<T> {
-	#[inline(always)]
-	fn drop(&mut self) {
-		if self.cap != 0 {
-			unsafe {
-				Void::drop(self.ptr.as_mut_ptr());
-			}
-		}
+		self.ptr.resize(size_of::<T>() * self.cap);
 	}
 }
 
@@ -145,7 +124,7 @@ impl<T> ::core::ops::Deref for Vec<T> {
 	#[inline(always)]
 	fn deref(&self) -> &Self::Target {
 		unsafe {
-			let ptr = self.ptr.as_ptr();
+			let ptr = self.ptr.as_ptr() as *const _;
 
 			::core::slice::from_raw_parts(ptr, self.len)
 		}
@@ -156,7 +135,7 @@ impl<T> ::core::ops::DerefMut for Vec<T> {
 	#[inline(always)]
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		unsafe {
-			let ptr = self.ptr.as_mut_ptr();
+			let ptr = self.ptr.as_mut_ptr() as *mut _;
 
 			::core::slice::from_raw_parts_mut(ptr, self.len)
 		}
