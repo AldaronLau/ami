@@ -5,6 +5,7 @@
 // src/vec.rs
 
 use core::ptr;
+use core::slice;
 
 use size_of;
 use HeapMem;
@@ -25,6 +26,23 @@ impl<T> Vec<T> {
 		let len = 0;
 
 		Vec { ptr, cap, len }
+	}
+
+	/// Create an empty `Vec<T>`.
+	#[inline(always)]
+	pub fn with_capacity(size: usize) -> Vec<T> {
+		let mut vector: Vec<T> = Vec::new();
+
+		vector.len = size;
+
+		// If it needs to grow, re-allocate.
+		while vector.grow() {
+			vector.resize();
+		}
+
+		vector.len = 0;
+
+		vector
 	}
 
 	/// Append an element at the end of the `Vec<T>`.
@@ -70,6 +88,24 @@ impl<T> Vec<T> {
 	#[inline(always)]
 	pub fn as_ptr(&self) -> *const T {
 		self.ptr.as_ptr() as *const _
+	}
+
+	/// Get a slice of `Vec<T>`'s Buffer.
+	#[inline(always)]
+	pub fn as_slice(&self) -> &[T] {
+		unsafe {
+			slice::from_raw_parts(self.ptr.as_ptr() as *const _
+				as *const T, self.len())
+		}
+	}
+
+	/// Get a slice of `Vec<T>`'s Buffer.
+	#[inline(always)]
+	pub fn as_mut_slice(&self) -> &mut [T] {
+		unsafe {
+			slice::from_raw_parts_mut(self.ptr.as_mut_ptr()
+				as *mut _ as *mut T, self.len())
+		}
 	}
 
 	// This will add capacity if len > cap

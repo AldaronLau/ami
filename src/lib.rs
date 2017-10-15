@@ -28,6 +28,11 @@ pub use vec::Vec;
 pub use heap_mem::HeapMem;
 pub use mem_addr::MemAddr;
 
+#[doc(hidden)]
+pub mod hidden_core {
+	pub use ::core::ptr::{ null, null_mut };
+}
+
 /// Get the size of type `T`, in bytes.
 #[inline(always)]
 pub fn size_of<T>() -> usize {
@@ -51,16 +56,30 @@ pub fn cast_mut_ptr<T>(from: *mut Void) -> *mut T {
 	from as *mut _
 }
 
+/// Cast a constant pointer to another type.
+#[macro_export] macro_rules! cast {
+	($a:expr) => {
+		$a as *const _
+	}
+}
+
+/// Cast a mutable pointer to another type.
+#[macro_export] macro_rules! cast_mut {
+	($a:expr) => {
+		$a as *mut _
+	}
+}
+
 /// Obtain a null pointer.
 #[macro_export] macro_rules! null {
 	() => {
-		::core::ptr::null()
+		$crate::hidden_core::null()
 	}
 }
 
 /// Obtain a mutable null pointer.
 #[macro_export] macro_rules! null_mut {
 	() => {
-		::core::ptr::null_mut()
+		$crate::hidden_core::null_mut()
 	}
 }

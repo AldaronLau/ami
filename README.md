@@ -1,29 +1,50 @@
-# Aldaron's Memory Interface ![](res/icon.png)
+# Aldaron's Memory Interface 0.5.0
+Aldaron's Memory Interface is a library developed by Plop Grizzly for
+manipulating memory.
 
-Aldaron's Memory Interface is a library developed by Plop Grizzly for manipulating memory.
+[Website](http://plopgrizzly.com/ami)
+[Cargo](https://crates.io/crates/ami)
+[Documentation](https://docs.rs/ami)
+[GitBook](https://plopgrizzly.gitbooks.io/ami)
 
-## Support
-Aldaron's Memory Interface supports:
-* Platforms with libc
+## Example
+Using `ami`'s `Vec`:
 
-Aldaron's Memory Interface will support:
-* Single program devices without libc by using own implementation of dynamic allocation.
+```rust
+extern crate ami;
+
+fn main() {
+	let mut vec : ami::Vec<i32> = ami::Vec::new();
+
+	println!("Empty Vec: {}", vec);
+	vec.push(12);
+	println!("Pushed 12: {}", vec);
+	vec.push(102);
+	println!("Pushed 102: {}", vec);
+	println!("vec[1] = {}", vec[1]);
+	println!("Pop: {}", vec.pop().unwrap());
+	println!("Vector: {}", vec);
+	println!("vec[0] = {}", vec[0]);
+}
+```
 
 ## Features
-Aldaron's Memory Interface can:
-* Give you C's `void *` type
-* Give you C's `NULL` as `null!`.
-* Allocate dynamic memory safely.
-* Do safe `Vec` operations that don't require rust's std lib.
-* Cast `Void` pointers like you would in C.
+`ami`'s current features:
+* Provide C's `void *` type
+* Provide C's `NULL` as `null!`.
+* Safe dynamic memory allocation without rust's std lib.
+* Safe `Vec` operations without rust's std lib.
+* Casting `Void` pointers like you would in C.
 * Transmute without rust's std lib.
 
-Aldaron's Memory Interface will be able to:
+`ami`'s planned features:
 * Load .so's into memory without libc/libdl
 * Load dll's into memory without libc/libdl
 
-## Links
-* [Website](http://plopgrizzly.com/ami)
-* [Cargo](https://crates.io/crates/ami)
-* [Documentation](https://docs.rs/ami)
-* [Tutorial](https://plopgrizzly.gitbooks.io/ami)
+## Support
+`ami`'s current support:
+* Platforms with libc
+
+`ami`'s planned support:
+* Arduino and Raspberry Pi (no os), providing an implementation for dynamic
+allocation.
