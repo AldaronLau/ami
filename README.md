@@ -2,13 +2,11 @@
 Aldaron's Memory Interface is a library developed by Plop Grizzly for
 manipulating memory.
 
-[Website](http://plopgrizzly.com/ami)
-[Cargo](https://crates.io/crates/ami)
+[Cargo](https://crates.io/crates/ami) /
 [Documentation](https://docs.rs/ami)
-[GitBook](https://plopgrizzly.gitbooks.io/ami)
 
 ## Example
-Using `ami`'s `Vec`:
+Using **ami**'s `Vec`:
 
 ```rust
 extern crate ami;
@@ -29,7 +27,7 @@ fn main() {
 ```
 
 ## Features
-`ami`'s current features:
+**ami**'s current features:
 * Provide C's `void *` type
 * Provide C's `NULL` as `null!`.
 * Safe dynamic memory allocation without rust's std lib.
@@ -37,14 +35,14 @@ fn main() {
 * Casting `Void` pointers like you would in C.
 * Transmute without rust's std lib.
 
-`ami`'s planned features:
+**ami**'s planned features:
 * Load .so's into memory without libc/libdl
 * Load dll's into memory without libc/libdl
 
 ## Support
-`ami`'s current support:
+**ami**'s current support:
 * Platforms with libc
 
-`ami`'s planned support:
-* Arduino and Raspberry Pi (no os), providing an implementation for dynamic
-allocation.
+**ami**'s planned support:
+* Arduino and Raspberry Pi (no os), providing a dynamic allocation
+implementation.
