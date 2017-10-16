@@ -39,6 +39,9 @@ categories = [ "no-std", "os", "data-structures", "memory-management" ]
 
 ################################################################################
 
-exclude = ["examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore"]
+exclude = [
+	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
+	"_config.yml", "ISSUE_TEMPLATE.md"
+]
 
 ################################################################################
