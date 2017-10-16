@@ -46,27 +46,17 @@ pub unsafe fn transmute<T,U>(from: T) -> U {
 	::core::ptr::read(&from as *const _ as *const U)
 }
 
-/// Cast `*const Void` to `*const T`
-pub fn cast_ptr<T>(from: *const Void) -> *const T {
-	from as *const _
-}
-
-/// Cast `*mut Void` to `*mut T`
-pub fn cast_mut_ptr<T>(from: *mut Void) -> *mut T {
-	from as *mut _
-}
-
 /// Cast a constant pointer to another type.
 #[macro_export] macro_rules! cast {
 	($a:expr) => {
-		$a as *const _
+		$a as *const _ as *const _
 	}
 }
 
 /// Cast a mutable pointer to another type.
 #[macro_export] macro_rules! cast_mut {
 	($a:expr) => {
-		$a as *mut _
+		$a as *mut _ as *mut _
 	}
 }
 
