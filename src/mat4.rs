@@ -7,6 +7,7 @@
 // use std::ops::*;
 // use std::fmt::*;
 
+use Vec4;
 use Vec3;
 use Plane;
 use Frustum;
@@ -166,6 +167,20 @@ impl ::std::ops::Mul<Vec3<f32>> for Mat4 {
 		let z = self.0[2]*rhs.x + self.0[6]*rhs.y + self.0[10]*rhs.z + self.0[14]*1.0;
 
 		Vec3::new(x, y, z)
+	}
+}
+
+impl ::std::ops::Mul<Vec4<f32>> for Mat4 {
+	type Output = Vec4<f32>;
+
+	/// Transform as a position.
+	fn mul(self, rhs: Vec4<f32>) -> Self::Output {
+		let x = self.0[0]*rhs.x + self.0[4]*rhs.y + self.0[8]*rhs.z + self.0[12]*rhs.w;
+		let y = self.0[1]*rhs.x + self.0[5]*rhs.y + self.0[9]*rhs.z + self.0[13]*rhs.w;
+		let z = self.0[2]*rhs.x + self.0[6]*rhs.y + self.0[10]*rhs.z + self.0[14]*rhs.w;
+		let w = self.0[3]*rhs.x + self.0[7]*rhs.y + self.0[11]*rhs.z + self.0[15]*rhs.w;
+
+		Vec4::new(x, y, z, w)
 	}
 }
 
