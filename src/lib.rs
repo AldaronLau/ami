@@ -24,6 +24,7 @@ mod pos;
 mod vec2;
 mod vec3;
 mod vec4;
+mod parent;
 
 pub use mat4::*;
 pub use bbox::*;
@@ -34,6 +35,7 @@ pub use pos::*;
 pub use vec2::*;
 pub use vec3::*;
 pub use vec4::*;
+pub use parent::*;
 
 /// Cast a constant pointer to another type.
 #[macro_export] macro_rules! cast {
