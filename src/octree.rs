@@ -378,7 +378,7 @@ impl<T> Octree<T> where T: Pos {
 		self.nodes[i] = br;
 	}
 	/// Remove a point from the octree
-	pub fn remove(&mut self, hnd: u32) {
+	pub fn remove(&mut self, hnd: u32) -> T {
 		assert!(self.n_points > 0);
 		assert!(self.root > 0);
 
@@ -387,6 +387,13 @@ impl<T> Octree<T> where T: Pos {
 		let p = self[hnd].posi();
 		self.remove_point(i, bbox, hnd, p);
 		self.point_garbage.push(hnd);
+
+		unsafe {
+			let mut ret = ::std::mem::uninitialized();
+			::std::ptr::copy_nonoverlapping(
+				&self.points[hnd as usize - 1], &mut ret, 1);
+			ret
+		}
 	}
 	/// Remove a point within a bounding box
 	fn remove_point(&mut self, i: usize, bbox: BBox<i32>, hnd: u32, p: Vec3i) {
@@ -427,11 +434,6 @@ impl<T> Octree<T> where T: Pos {
 //					hnd, self[hnd].posi(), i);
 			}
 		}
-	}
-	/// Modify a point in the octree.
-	pub fn modify(&mut self, hnd: &mut u32, p: T) {
-		self.remove(*hnd);
-		*hnd = self.add(p);
 	}
 	/// Find node children
 	fn find_node_ch(&mut self, sorted: &mut Vec<u32>, i: usize,

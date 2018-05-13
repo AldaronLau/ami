@@ -72,7 +72,7 @@ impl<T, U> Parent<T, U> where U: PseudoDrop<T = T> {
 	}
 
 	/// Get the parent data.
-	pub fn data<'a>(&'a mut self) -> &'a mut T {
+	pub fn data<'a>(&'a self) -> &'a mut T {
 		unsafe { &mut (*self.heap).d }
 	}
 }
@@ -97,7 +97,7 @@ impl<T, U> Drop for Parent<T, U> where U: PseudoDrop<T = T> {
 
 impl<T, U> Child<T, U> where U: PseudoDrop<T = T> {
 	/// Create a new `Child` for the `Parent`.
-	pub fn new(parent: &mut Parent<T, U>, data: U) -> Self {
+	pub fn new(parent: &Parent<T, U>, data: U) -> Self {
 		let heap_child = Box::new(HeapChild(Some(
 			(NonNull::new(parent.heap).unwrap(), data)
 		)));
@@ -123,17 +123,31 @@ impl<T, U> Child<T, U> where U: PseudoDrop<T = T> {
 		}
 	}
 
-	fn heap_parent<'a>(&'a mut self) -> &'a mut HeapParent<T, U> {
+	fn heap_parent<'a>(&'a self) -> &'a HeapParent<T, U> {
 		unsafe { (*self.heap).0.as_mut().unwrap().0.as_mut() }
 	}
 
-	/// Get the `Parent`'s data
-	pub fn parent<'a>(&'a mut self) -> &'a mut T {
-		&mut self.heap_parent().d
+	fn heap_parent_mut<'a>(&'a mut self) -> &'a mut HeapParent<T, U> {
+		unsafe { (*self.heap).0.as_mut().unwrap().0.as_mut() }
+	}
+
+	/// Get the `Parent`'s data.
+	pub fn parent<'a>(&'a self) -> &'a T {
+		&self.heap_parent().d
+	}
+
+	/// Get the `Parent`'s data (mutable).
+	pub fn parent_mut<'a>(&'a mut self) -> &'a mut T {
+		&mut self.heap_parent_mut().d
 	}
 
 	/// Get the `Child`'s data.
-	pub fn data<'a>(&'a mut self) -> &'a mut U {
+	pub fn data<'a>(&'a self) -> &'a U {
+		unsafe { &(*self.heap).0.as_mut().unwrap().1 }
+	}
+
+	/// Get the `Child`'s data (mutable).
+	pub fn data_mut<'a>(&'a mut self) -> &'a mut U {
 		unsafe { &mut (*self.heap).0.as_mut().unwrap().1 }
 	}
 
@@ -148,10 +162,10 @@ impl<T, U> Drop for Child<T, U> where U: PseudoDrop<T = T> {
 		// If it hasn't already been pseudo-dropped.
 		if unsafe { &(*self.heap).0 }.is_some() {
 			let id = self.id;
-			self.heap_parent().o.push(id);
+			self.heap_parent_mut().o.push(id);
 			unsafe {
 				(*self.heap).0.as_mut().unwrap().1
-					.pdrop(&mut self.heap_parent().d);
+					.pdrop(&mut self.heap_parent_mut().d);
 			}
 			unsafe { (*self.heap).0 = None };
 		}
