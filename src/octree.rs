@@ -231,7 +231,11 @@ impl<T> Octree<T> where T: Pos {
 	/// Add a point in the octree
 	pub fn add(&mut self, point: T) -> u32 {
 		let hnd = if let Some(hnd) = self.point_garbage.pop() {
-			self.points[hnd as usize - 1] = point;
+			unsafe {
+				::std::ptr::copy_nonoverlapping(&point,
+					&mut self.points[hnd as usize - 1], 1);
+			}
+			::std::mem::forget(point);
 			hnd
 		} else {
 			self.points.push(point);
