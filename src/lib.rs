@@ -1,9 +1,6 @@
-// Aldaron's Memory Interface
-// Copyright (c) 2017-2018 Jeron Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "ami" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 //
-// lib.rs
-
 //! Aldaron's Memory Interface provides data structures and casting macros.
 
 #![warn(missing_docs)]

@@ -1,33 +1,27 @@
-# Aldaron's Memory Interface                                                   #
-# Copyright (c) 2017-2018 Jeron Lau <jeron.lau@plopgrizzly.com>                #
-# Licensed under the MIT LICENSE                                               #
-#                             _        _                                       #
-#                            /@\——————/@\                                      #
-# .———  .                   |   o    o   |     .————      .            .       #
-# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   . #
-# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   | #
-# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /  #
-# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |   #
-# |     |   ———   |       |                |    ————  |   | :——— :———  |   |   #
-#                 |        \              /                              __/   #
-#                           ¯————————————¯                                     #
-# Cargo.toml                                                                   #
-
-################################################################################
+# "ami" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
 
 [package]
 name = "ami"
-version = "0.6.0"
-authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
-
-################################################################################
+version = "0.7.0"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
+]
 
 license = "MIT"
 documentation = "https://docs.rs/ami"
 homepage = "http://plopgrizzly.com/ami"
 repository = "https://github.com/plopgrizzly/ami"
-
-################################################################################
 
 readme = "README.md"
 description = """
@@ -36,11 +30,7 @@ description = """
 keywords = [ "memory", "ffi", "casting", "math", "geometry" ]
 categories = [ "os", "data-structures", "memory-management" ]
 
-################################################################################
-
 exclude = [
 	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
 	"_config.yml", "ISSUE_TEMPLATE.md"
 ]
-
-################################################################################

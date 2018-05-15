@@ -1,9 +1,6 @@
-// Aldaron's Memory Interface
-// Copyright (c) 2017  Douglas P Lau
-// Copyright (c) 2017-2018, Jeron Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
-//
-// bbox.rs
+// "ami" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017  Douglas P. Lau
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use std::fmt;
 use std::cmp;

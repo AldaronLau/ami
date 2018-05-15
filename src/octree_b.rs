@@ -1,9 +1,6 @@
-// Aldaron's Device Interface / GPU
-// Copyright (c) 2017 Douglas P Lau
-// Copyright (c) 2017 Jeron Lau
-// Licensed under the MIT LICENSE
-//
-// octree_b.rs
+// "ami" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017  Douglas P. Lau
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use std::cmp::Ordering;
 use std::fmt;

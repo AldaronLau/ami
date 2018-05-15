@@ -1,11 +1,5 @@
-// Aldaron's Memory Interface
-// Copyright (c) 2018 Jeron Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
-//
-// mat4.rs
-
-// use std::ops::*;
-// use std::fmt::*;
+// "ami" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use Vec4;
 use Vec3;
