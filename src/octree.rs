@@ -65,6 +65,7 @@ impl fmt::Debug for Node {
 	}
 }
 
+#[allow(unused)]
 impl Node {
 	/// Create a new leaf node
 	fn new_leaf() -> Node {
@@ -226,6 +227,7 @@ impl Node {
 	}
 }
 
+#[allow(unused)]
 impl<T> Octree<T> where T: Collider {
 	/// Create a new octree
 	pub fn new() -> Octree<T> {
