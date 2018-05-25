@@ -6,11 +6,10 @@ use std::fmt;
 use std::cmp::Ordering;
 
 use Vec3;
+use BCube;
 use BBox;
-use Pos;
+use Collider;
 use Frustum;
-
-type Vec3i = Vec3<i32>;
 
 /// An octree is a DAG that can quickly search for points in 3D space.
 ///
@@ -23,12 +22,12 @@ type Vec3i = Vec3<i32>;
 /// This saves memory over using pointers on 64-bit systems.  Node ID 1 is the
 /// first node in the vector.
 ///
-pub struct Octree<T: Pos> {
+pub struct Octree<T: Collider> {
 	points: Vec<T>,
 	point_garbage: Vec<u32>,
 	nodes: Vec<Node>,
 	garbage: Vec<u32>,
-	bbox: BBox<i32>,
+	bcube: BCube,
 	root: usize,
 	n_points: u32,
 }
@@ -118,17 +117,38 @@ impl Node {
 			None => true,
 		}
 	}
-	/// Check if all points are coincident with the given point
-	fn all_coincident<T>(&self, p: Vec3i, octree: &Octree<T>) -> bool where T: Pos {
+
+// TODO: Remove
+/*	/// Check if all points are coincident with the given point
+	fn all_coincident<T>(&self, p: Vec3, octree: &Octree<T>)
+		-> bool where T: Collider
+	{
 		assert!(self.is_leaf());
 		assert!(self.is_full());
-		p == octree[self.child[1]].posi() &&
-		p == octree[self.child[2]].posi() &&
-		p == octree[self.child[3]].posi() &&
-		p == octree[self.child[4]].posi() &&
-		p == octree[self.child[5]].posi() &&
-		p == octree[self.child[6]].posi()
+		p == octree[self.child[1]].bbox() &&
+		p == octree[self.child[2]].bbox() &&
+		p == octree[self.child[3]].bbox() &&
+		p == octree[self.child[4]].bbox() &&
+		p == octree[self.child[5]].bbox() &&
+		p == octree[self.child[6]].bbox()
+	}*/
+
+	/// Check if all bounding boxes are coincident with the given center
+	fn all_coincident_bcube<T>(&self, c: Vec3, p: BBox, octree: &Octree<T>)
+		-> bool where T: Collider
+	{
+		assert!(self.is_leaf());
+		assert!(self.is_full());
+
+		Self::which_child_bbox(c, p).is_none()
+			&& Self::which_child_bbox(c, octree[self.child[1]].bbox()).is_none()
+			&& Self::which_child_bbox(c, octree[self.child[2]].bbox()).is_none()
+			&& Self::which_child_bbox(c, octree[self.child[3]].bbox()).is_none()
+			&& Self::which_child_bbox(c, octree[self.child[4]].bbox()).is_none()
+			&& Self::which_child_bbox(c, octree[self.child[5]].bbox()).is_none()
+			&& Self::which_child_bbox(c, octree[self.child[6]].bbox()).is_none()
 	}
+
 	/// Add a point to a leaf node
 	fn add_leaf(&mut self, hnd: u32) {
 		assert!(self.is_leaf());
@@ -136,6 +156,7 @@ impl Node {
 		let s = self.open_slot().unwrap();
 		self.child[s] = hnd;
 	}
+
 	/// Remove a point from a leaf node
 	fn remove_leaf(&mut self, hnd: u32) -> bool {
 		assert!(self.is_leaf());
@@ -157,7 +178,7 @@ impl Node {
 			self.child[5], self.child[6]]
 	}
 	/// Determine which child for a branch point
-	fn which_child(c: Vec3i, p: Vec3i) -> usize {
+	fn which_child(c: Vec3, p: Vec3) -> usize {
 		match (p.x < c.x, p.y < c.y, p.z < c.z) {
 			(true,  true,  true)  => 0,
 			(true,  true,  false) => 1,
@@ -169,31 +190,43 @@ impl Node {
 			(false, false, false) => 7,
 		}
 	}
+	/// Determine which child for a branch bbox, if there is one it fully
+	/// fits into.
+	fn which_child_bbox(c: Vec3, p: BBox) -> Option<usize> {
+		let min = Self::which_child(c, p.min);
+		let max = Self::which_child(c, p.max);
+
+		if min == max {
+			Some(min)
+		} else {
+			None
+		}
+	}
 	/// Calculate the center of a child node
-	fn child_center(ch: usize, c: Vec3i, h: i32) -> Vec3i {
-		let h = if h == 0 { 1 } else { h };
+	fn child_center(ch: usize, c: Vec3, h: f32) -> Vec3 {
+		let h = if h < 0.000001 { 1.0 } else { h };
 
 		match ch {
-			0 => Vec3i::new(c.x - h, c.y - h, c.z - h),
-			1 => Vec3i::new(c.x - h, c.y - h, c.z + h),
-			2 => Vec3i::new(c.x - h, c.y + h, c.z - h),
-			3 => Vec3i::new(c.x - h, c.y + h, c.z + h),
-			4 => Vec3i::new(c.x + h, c.y - h, c.z - h),
-			5 => Vec3i::new(c.x + h, c.y - h, c.z + h),
-			6 => Vec3i::new(c.x + h, c.y + h, c.z - h),
-			_ => Vec3i::new(c.x + h, c.y + h, c.z + h),
+			0 => Vec3::new(c.x - h, c.y - h, c.z - h),
+			1 => Vec3::new(c.x - h, c.y - h, c.z + h),
+			2 => Vec3::new(c.x - h, c.y + h, c.z - h),
+			3 => Vec3::new(c.x - h, c.y + h, c.z + h),
+			4 => Vec3::new(c.x + h, c.y - h, c.z - h),
+			5 => Vec3::new(c.x + h, c.y - h, c.z + h),
+			6 => Vec3::new(c.x + h, c.y + h, c.z - h),
+			_ => Vec3::new(c.x + h, c.y + h, c.z + h),
 		}
 	}
 	/// Calculate the bounding box of a child node
-	fn child_bbox(ch: usize, bbox: BBox<i32>) -> BBox<i32> {
-		assert!(bbox.half_len > 0);
-		let half_len = bbox.half_len / 2;
-		let center = Node::child_center(ch, bbox.center, half_len);
-		BBox { center: center, half_len: half_len }
+	fn child_bcube(ch: usize, bcube: BCube) -> BCube {
+		assert!(bcube.half_len > 0.0);
+		let half_len = bcube.half_len / 2.0;
+		let center = Node::child_center(ch, bcube.center, half_len);
+		BCube { center: center, half_len: half_len }
 	}
 }
 
-impl<T> Octree<T> where T: Pos {
+impl<T> Octree<T> where T: Collider {
 	/// Create a new octree
 	pub fn new() -> Octree<T> {
 		Octree {
@@ -201,11 +234,12 @@ impl<T> Octree<T> where T: Pos {
 			point_garbage: Vec::new(),
 			nodes: Vec::new(),
 			garbage: Vec::new(),
-			bbox: BBox::empty(),
+			bcube: BCube::empty(),
 			root: 0,
 			n_points: 0,
 		}
 	}
+
 	/// Add a new node
 	fn new_node(&mut self, n: Node) -> usize {
 		if let Some(i) = self.garbage.pop() {
@@ -217,14 +251,17 @@ impl<T> Octree<T> where T: Pos {
 			self.nodes.len()
 		}
 	}
+
 	/// Add a new leaf node
 	fn new_leaf(&mut self) -> usize {
 		self.new_node(Node::new_leaf())
 	}
+
 	/// Add a new branch node
 	fn new_branch(&mut self) -> usize {
 		self.new_node(Node::new_branch())
 	}
+
 	/// Add a point in the octree
 	pub fn add(&mut self, point: T) -> u32 {
 		let hnd = if let Some(hnd) = self.point_garbage.pop() {
@@ -246,36 +283,101 @@ impl<T> Octree<T> where T: Pos {
 
 		hnd
 	}
+
+	fn collision_descent(&self, bcube: BCube, bb: BBox, hnd: usize,
+		point: u32) -> Option<u32>
+	{
+		if self.nodes[hnd].is_leaf() {
+			for hnd in self.nodes[hnd].leaf_children().iter() {
+				if *hnd < 1 || *hnd == point { continue; }
+
+				// Does this element collide with bb?
+				if bb.collide(self.points[*hnd as usize].bbox()) {
+					return Some(*hnd + 1);
+				}
+			}
+
+			let hnd = self.nodes[hnd].link();
+			if hnd > 0 {
+				let result = self.collision_descent(bcube, bb,
+					hnd - 1, point);
+				if result.is_some() {
+					return result;
+				}
+			}
+		} else {
+			for ch in 0 .. 8 {
+				let bc = Node::child_bcube(ch, bcube);
+
+				if bb.collide_bcube(bc) {
+					let k = self.nodes[hnd]
+						.child[ch as usize] as usize;
+					if k > 0 {
+						self.collision_descent(bc, bb,
+							k - 1, point);
+					}
+				}
+			}
+		}
+
+		None
+	}
+
+	/// Test before moving a point within the octree, to see if it collides.
+	/// If it does, returns with what and a new force vector.
+	///
+	/// TODO: doesn't work yet.
+	pub fn bounce_test(&self, point: u32, force: &mut Vec3)
+		-> Option<u32>
+	{
+		// Calculate new BBox.
+		let bb = self.points[point as usize - 1].bbox() + *force;
+		// See if it collides, and with what.
+		let rt = self.collision_descent(self.bcube, bb, self.root - 1,
+			point - 1);
+
+		// If it does collide, calculate the maximum force that doesn't
+		// collide.
+		// TODO:
+		/*if let Some(collider) = rt {
+			let posx = force.x > 0.0;
+			let posy = force.y > 0.0;
+			let posz = force.z > 0.0;
+		}*/
+
+		rt
+	}
+
 	/// Add a point when empty
 	fn add_0(&mut self, hnd: u32) {
 		assert!(self.n_points == 0);
-		let p = self[hnd].posi();
+		let p = self[hnd].bbox();
 		self.nodes.clear();
 		self.garbage.clear();
 		self.point_garbage.clear();
 		let i = self.new_leaf();
 		self.nodes[i - 1].add_leaf(hnd);
-		self.bbox = BBox::new(p);
+		self.bcube = BCube::new(p.center());
 		self.root = 1;
 		self.n_points = 1;
 	}
 	/// Add a point when not empty
 	fn add_n(&mut self, hnd: u32) {
 		assert!(self.n_points > 0);
-		let p = self[hnd].posi();
-		while !self.bbox.contains(p) {
+		let p = self[hnd].bbox();
+		while !p.collide_bcube(self.bcube) {
 			self.grow_root(p);
 		}
 		self.add_inside(hnd);
 	}
 	/// Grow the root node
-	fn grow_root(&mut self, p: Vec3i) {
-		assert!(!self.bbox.contains(p));
-		let center = self.bbox.center;
+	fn grow_root(&mut self, p: BBox) {
+		assert!(!p.collide_bcube(self.bcube));
+		let center = self.bcube.center;
 		let i = self.root - 1;
-		self.bbox.extend(p);
+		self.bcube.extend(p);
 		if self.nodes[i].is_branch() {
-			let ch = Node::which_child(self.bbox.center, center);
+			let ch = Node::which_child(self.bcube.center, center);
 			let k = self.new_branch();
 			self.nodes[k - 1].child[ch] = self.root as u32;
 			self.root = k;
@@ -283,37 +385,37 @@ impl<T> Octree<T> where T: Pos {
 	}
 	/// Add a point within the bounds
 	fn add_inside(&mut self, hnd: u32) {
-		let p = self[hnd].posi();
-		assert!(self.bbox.contains(p));
-		let (mut i, mut bbox) = self.find_leaf_grow(p);
+		let p = self[hnd].bbox();
+		assert!(p.collide_bcube(self.bcube));
+		let (mut i, mut bcube) = self.find_leaf_grow(p);
 		while self.nodes[i].is_full() {
-			let (j, bb) = self.grow_leaf(i, bbox, p);
+			let (j, bb) = self.grow_leaf(i, bcube, p);
 			i = j;
-			bbox = bb;
+			bcube = bb;
 		}
 		self.nodes[i].add_leaf(hnd);
 		self.n_points += 1;
 	}
 	/// Find the leaf node for a point (grow it if necessary)
-	fn find_leaf_grow(&mut self, p: Vec3i) -> (usize, BBox<i32>) {
-		assert!(self.bbox.contains(p));
+	fn find_leaf_grow(&mut self, p: BBox) -> (usize, BCube) {
+		assert!(p.collide_bcube(self.bcube));
 		let mut i = self.root - 1;
-		let mut bbox = self.bbox;
+		let mut bcube = self.bcube;
 		while self.nodes[i].is_branch() {
-			let (j, bb) = self.follow_branch_grow(i, bbox, p);
+			let (j, bb) = self.follow_branch_grow(i, bcube, p);
 			i = j;
-			bbox = bb;
+			bcube = bb;
 		}
-		(i, bbox)
+		(i, bcube)
 	}
 	/// Follow a branch or grow a leaf node
-	fn follow_branch_grow(&mut self, i: usize, bbox: BBox<i32>, p: Vec3i) ->
-		(usize, BBox<i32>)
+	fn follow_branch_grow(&mut self, i: usize, bcube: BCube, p: BBox) ->
+		(usize, BCube)
 	{
 		assert!(self.nodes[i].is_branch());
-		let ch = Node::which_child(bbox.center, p);
+		let ch = Node::which_child_bbox(bcube.center, p).unwrap();
 		let j = self.nodes[i].child[ch] as usize;
-		let bb = Node::child_bbox(ch, bbox);
+		let bb = Node::child_bcube(ch, bcube);
 		if j > 0 {
 			(j - 1, bb)
 		} else {
@@ -323,36 +425,35 @@ impl<T> Octree<T> where T: Pos {
 		}
 	}
 	/// Grow a leaf node into a branch or link
-	fn grow_leaf(&mut self, i: usize, bbox: BBox<i32>, p: Vec3i)
-		-> (usize, BBox<i32>)
+	fn grow_leaf(&mut self, i: usize, bcube: BCube, p: BBox)
+		-> (usize, BCube)
 	{
 		assert!(self.nodes[i].is_leaf());
 		assert!(self.nodes[i].is_full());
-		if self.nodes[i].all_coincident(p, &self) {
-			self.grow_leaf_link(i, bbox)
+
+		if self.nodes[i].all_coincident_bcube(bcube.center, p, &self) {
+			self.grow_leaf_link(i, bcube)
 		} else {
-			self.grow_leaf_branch(i, bbox.center);
-			self.follow_branch_grow(i, bbox, p)
+			self.grow_leaf_branch(i, bcube.center);
+			self.follow_branch_grow(i, bcube, p)
 		}
 	}
 	/// Grow a leaf node linking to another leaf
-	fn grow_leaf_link(&mut self, i: usize, bbox: BBox<i32>)
-		-> (usize, BBox<i32>)
-	{
+	fn grow_leaf_link(&mut self, i: usize, bcube: BCube) -> (usize, BCube) {
 		assert!(self.nodes[i].is_leaf());
 		assert!(self.nodes[i].is_full());
 		let j = self.nodes[i].link();
 		if j > 0 {
-			(j - 1, bbox)
+			(j - 1, bcube)
 		} else {
 			let k = self.new_leaf();
 			// Link to new coincident leaf
 			self.nodes[i].child[LINK] = k as u32;
-			(k - 1, bbox)
+			(k - 1, bcube)
 		}
 	}
 	/// Grow a full leaf into a branch
-	fn grow_leaf_branch(&mut self, i: usize, center: Vec3i) {
+	fn grow_leaf_branch(&mut self, i: usize, center: Vec3) {
 		assert!(self.nodes[i].is_leaf());
 		assert!(self.nodes[i].is_full());
 		let mut br = Node::new_branch();
@@ -360,8 +461,8 @@ impl<T> Octree<T> where T: Pos {
 		for hnd in self.nodes[i].leaf_children().iter() {
 			if *hnd < 1 { continue; }
 
-			let p = self[*hnd].posi();
-			let ch = Node::which_child(center, p);
+			let p = self[*hnd].bbox();
+			let ch = Node::which_child_bbox(center, p).unwrap();
 			let j = br.child[ch] as usize;
 			if j > 0 {
 				// NOTE: if there is a link, all children
@@ -384,9 +485,9 @@ impl<T> Octree<T> where T: Pos {
 		assert!(self.root > 0);
 
 		let i = self.root - 1;
-		let bbox = self.bbox;
-		let p = self[hnd].posi();
-		self.remove_point(i, bbox, hnd, p);
+		let bcube = self.bcube;
+		let p = self[hnd].bbox();
+		self.remove_point(i, bcube, hnd, p);
 		self.point_garbage.push(hnd);
 
 		unsafe {
@@ -397,21 +498,21 @@ impl<T> Octree<T> where T: Pos {
 		}
 	}
 	/// Remove a point within a bounding box
-	fn remove_point(&mut self, i: usize, bbox: BBox<i32>, hnd: u32, p: Vec3i) {
+	fn remove_point(&mut self, i: usize, bcube: BCube, hnd: u32, p: BBox) {
 		if self.nodes[i].is_branch() {
-			self.remove_branch(i, bbox, hnd, p);
+			self.remove_branch(i, bcube, hnd, p);
 		} else {
 			self.remove_leaf(i, hnd);
 		}
 	}
 	/// Remove a point from a branch
-	fn remove_branch(&mut self, i: usize, bbox: BBox<i32>, hnd: u32, p: Vec3i) {
+	fn remove_branch(&mut self, i: usize, bcube: BCube, hnd: u32, p: BBox) {
 		assert!(self.nodes[i].is_branch());
-		let ch = Node::which_child(bbox.center, p);
+		let ch = Node::which_child_bbox(bcube.center, p).unwrap();
 		let j = self.nodes[i].child[ch];
 		if j > 0 {
 			let k = (j - 1) as usize;
-			let bb = Node::child_bbox(ch, bbox);
+			let bb = Node::child_bcube(ch, bcube);
 			self.remove_point(k, bb, hnd, p);
 			if self.nodes[k].is_empty() {
 				self.nodes[i].child[ch] = 0;
@@ -432,38 +533,39 @@ impl<T> Octree<T> where T: Pos {
 			} else {
 //				self.print();
 //				panic!("Couldn't find hnd {} ({:?}) in {}!",
-//					hnd, self[hnd].posi(), i);
+//					hnd, self[hnd].bbox(), i);
 			}
 		}
 	}
+
 	/// Find node children
 	fn find_node_ch(&mut self, sorted: &mut Vec<u32>, i: usize,
-		frustum: Frustum, bbox: BBox<i32>)
+		frustum: Frustum, bcube: BCube)
 	{
 		if self.nodes[i].is_leaf() {
 			for hnd in self.nodes[i].leaf_children().iter() {
 				if *hnd < 1 { continue; }
 
-				if frustum.collide_point(
-					self[*hnd].posf())
+				if frustum.collide_bbox(
+					self[*hnd].bbox())
 				{
 					sorted.push(*hnd);
 				}
 			}
 			let j = self.nodes[i].link();
 			if j > 0 {
-				self.find_node_ch(sorted, j - 1, frustum, bbox);
+				self.find_node_ch(sorted, j - 1, frustum, bcube);
 			}
 		} else {
 			for ch in 0 .. 8 {
-//				let bb = Node::child_bbox(ch, bbox);
+//				let bb = Node::child_bcube(ch, bcube);
 
-//				if frustum.collide_bbox(bb) {
+//				if frustum.collide_bcube(bb) {
 					let k = self.nodes[i as usize]
 						.child[ch as usize] as usize;
 					if k > 0 {
 						self.find_node_ch(sorted, k - 1,
-							frustum, bbox);
+							frustum, bcube);
 					}
 //				}
 			}
@@ -478,13 +580,13 @@ impl<T> Octree<T> where T: Pos {
 		}
 
 		let hnd = self.root - 1;
-		let bbox = self.bbox;
+		let bcube = self.bcube;
 
-		self.find_node_ch(sorted, hnd, frustum, bbox);
+		self.find_node_ch(sorted, hnd, frustum, bcube);
 
 		sorted.sort_unstable_by(|a, b| {
-			let p1 = self[*a].posf() - frustum.center;
-			let p2 = self[*b].posf() - frustum.center;
+			let p1 = self[*a].bbox().center() - frustum.center;
+			let p2 = self[*b].bbox().center() - frustum.center;
 
 			if p1.mag() > p2.mag() {
 				if nr {Ordering::Greater} else {Ordering::Less}
@@ -509,11 +611,11 @@ impl<T> Octree<T> where T: Pos {
 	}
 	/// Print the octree
 	pub fn print(&self) {
-		self.print_node(self.root - 1, self.bbox, 0);
+		self.print_node(self.root - 1, self.bcube, 0);
 		println!("");
 	}
 	/// Print a node and its descendants
-	fn print_node(&self, i: usize, bbox: BBox<i32>, t: u32) {
+	fn print_node(&self, i: usize, bcube: BCube, t: u32) {
 		let n = &self.nodes[i];
 		print!("\n{:3} ", i + 1);
 		for _ in 0 .. t {
@@ -524,20 +626,20 @@ impl<T> Octree<T> where T: Pos {
 			for hnd in n.leaf_children().iter() {
 				if *hnd < 1 { continue; }
 
-				let p = self[*hnd].posi();
+				let p = self[*hnd].bbox();
 				print!(" {:?}_{:?}", *hnd, p);
 			}
-			print!("\t{:?}", bbox);
+			print!("\t{:?}", bcube);
 			let j = n.link();
 			if j > 0 {
 				print!("\tCCoincident LLink:");
-				self.print_node(j - 1, bbox, t);
+				self.print_node(j - 1, bcube, t);
 			}
 		} else {
 			print!("{:?}", n);
-			print!("\t{:?}", bbox);
+			print!("\t{:?}", bcube);
 			for ch in 0 .. 8 {
-				let bb = Node::child_bbox(ch, bbox);
+				let bb = Node::child_bcube(ch, bcube);
 				let k = n.child[ch] as usize;
 				if k > 0 {
 					self.print_node(k - 1, bb, t + 1);
@@ -551,30 +653,30 @@ impl<T> Octree<T> where T: Pos {
 	}
 	/// Abort program on error if the octree is corrupt!
 	#[allow(unused)] pub fn check_corrupt(&self) {
-		self.check_corrupt_node(self.root - 1, self.bbox, 0);
+		self.check_corrupt_node(self.root - 1, self.bcube, 0);
 	}
 	/// Print a node and its descendants
-	fn check_corrupt_node(&self, i: usize, bbox: BBox<i32>, t: u32) {
+	fn check_corrupt_node(&self, i: usize, bcube: BCube, t: u32) {
 		let n = &self.nodes[i];
 
 		if n.is_leaf() {
 			for hnd in n.leaf_children().iter() {
 				if *hnd < 1 { continue; }
 
-				let p = self[*hnd].posi();
+				let p = self[*hnd].bbox();
 
-				if !bbox.contains(p) {
+				if !p.collide_bcube(bcube) {
 					self.print();
-					panic!("Corrupt Octree at HND: {} P: {:?} BBOX: {:?}", *hnd, p, bbox);
+					panic!("Corrupt Octree at HND: {} P: {:?} BBOX: {:?}", *hnd, p, bcube);
 				}
 			}
 			let j = n.link();
 			if j > 0 {
-				self.check_corrupt_node(j - 1, bbox, t);
+				self.check_corrupt_node(j - 1, bcube, t);
 			}
 		} else {
 			for ch in 0 .. 8 {
-				let bb = Node::child_bbox(ch, bbox);
+				let bb = Node::child_bcube(ch, bcube);
 				let k = n.child[ch] as usize;
 				if k > 0 {
 					self.check_corrupt_node(k - 1, bb, t + 1);
@@ -584,7 +686,7 @@ impl<T> Octree<T> where T: Pos {
 	}
 }
 
-impl<T> ::std::ops::Index<u32> for Octree<T> where T: Pos {
+impl<T> ::std::ops::Index<u32> for Octree<T> where T: Collider {
 	type Output = T;
 
 	fn index<'a>(&'a self, index: u32) -> &'a T {
@@ -592,16 +694,16 @@ impl<T> ::std::ops::Index<u32> for Octree<T> where T: Pos {
 	}
 }
 
-impl<T> ::std::ops::IndexMut<u32> for Octree<T> where T: Pos {
+impl<T> ::std::ops::IndexMut<u32> for Octree<T> where T: Collider {
 	fn index_mut<'a>(&'a mut self, index: u32) -> &'a mut T {
 		&mut self.points[index as usize - 1]
 	}
 }
 
 
-impl<T> fmt::Debug for Octree<T> where T: Pos {
+impl<T> fmt::Debug for Octree<T> where T: Collider {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		try!(write!(f, "octree: bbox: {:?}", self.bbox));
+		try!(write!(f, "octree: bcube: {:?}", self.bcube));
 		try!(write!(f, "\n\troot: {:?}", self.root));
 		try!(write!(f, "\n\tn_points: {:?}", self.n_points));
 		try!(write!(f, "\n\tnodes: {:?}", self.nodes.len()));
@@ -617,7 +719,7 @@ fn test_octree() {
 	for x in 0 .. 100 {
 		for y in 0 .. 100 {
 			for z in 0 .. 100 {
-				o.add(Vec3i::new(x, y, z));
+				o.add(Vec3::new(x, y, z));
 				o.check_corrupt();
 			}
 		}
@@ -631,11 +733,11 @@ fn test_coincident() {
 	let mut o = Octree::new();
 
 	for _ in 0 .. 10 {
-		o.add(Vec3i::new(0, 0, 0));
+		o.add(Vec3::new(0, 0, 0));
 		o.check_corrupt();
 	}
 
-	o.add(Vec3i::new(1,1,1));
+	o.add(Vec3::new(1,1,1));
 	o.check_corrupt();
 
 	assert!(o.len() == 11);
@@ -648,7 +750,7 @@ fn test_add_remove() {
 	for x in 0 .. 10 {
 		for y in 0 .. 10 {
 			for z in 0 .. 10 {
-				o.add(Vec3i::new(x, y, z));
+				o.add(Vec3::new(x, y, z));
 				o.check_corrupt();
 			}
 		}
@@ -669,7 +771,7 @@ fn test_add_and_remove() {
 	let mut o = Octree::new();
 
 	for _ in 0 .. 10 {
-		o.add(Vec3i::new(0, 0, 0));
+		o.add(Vec3::new(0, 0, 0));
 		o.check_corrupt();
 	}
 	assert!(o.len() == 2 + 8);
@@ -681,7 +783,7 @@ fn test_add_and_remove() {
 	assert!(o.len() == 0 + 8);
 
 	for _ in 0 .. 2 {
-		o.add(Vec3i::new(1, 2, 4));
+		o.add(Vec3::new(1, 2, 4));
 		o.check_corrupt();
 	}
 	assert!(o.len() == 2 + 8);

@@ -4,6 +4,7 @@
 use std::fmt;
 
 use Vec3;
+use BCube;
 use BBox;
 // use math::Plane;
 
@@ -11,7 +12,7 @@ use BBox;
 /// A Frustum
 pub struct Frustum {
 	/// The center of the frustum
-	pub center: Vec3<f32>,
+	pub center: Vec3,
 	/// The radius of the frustum
 	pub radius: f32,
 	/// The fov in x
@@ -39,7 +40,7 @@ impl Frustum {
 	/// * `yrot` - Direction facing on y axis (radians).
 	/// * `wfov` - The fov on the X axis (radians).
 	/// * `hfov` - The fov on the Y axis (radians).
-	pub fn new(center: Vec3<f32>, radius: f32, xrot: f32, yrot: f32,
+	pub fn new(center: Vec3, radius: f32, xrot: f32, yrot: f32,
 		wfov: f32, hfov: f32) -> Frustum
 	{
 /*		let xmax = far / (wfov / 2.0).tan();
@@ -66,12 +67,21 @@ impl Frustum {
 		Frustum { center, radius, xrot, yrot, wfov, hfov }
 	}
 
-	/// If viewing frustum collides with the bounding box.
-	pub fn collide_bbox(&self, bbox: BBox<i32>) -> bool {
+	/// 
+	pub fn collide_bbox(&self, bbox: BBox) -> bool {
 		for i in bbox.all_points().iter() {
-			let point : Vec3<f32> = (*i).into();
+			if (*i - self.center).mag() <= self.radius {
+				return true;
+			}
+		}
 
-			if (point - self.center).mag() <= self.radius {
+		false
+	}
+
+	/// If viewing frustum collides with the bounding box.
+	pub fn collide_bcube(&self, bcube: BCube) -> bool {
+		for i in bcube.all_points().iter() {
+			if (*i - self.center).mag() <= self.radius {
 				return true;
 			}
 		}
@@ -89,7 +99,7 @@ impl Frustum {
 			self.near, self.far];
 
 		for plane in planes.iter() {
-			let (a, b) = bbox.pn_pair_from_normal(plane.facing);
+			let (a, b) = bcube.pn_pair_from_normal(plane.facing);
 
 			if !plane.isdistpos_point(a) && !plane.isdistpos_point(b) {
 				return false;
@@ -97,13 +107,13 @@ impl Frustum {
 		}*/
 
 /*		// All 6 planes must have a point within their area.
-		top.isdistpos_bbox(bbox) && bottom.isdistpos_bbox(bbox) &&
-			right.isdistpos_bbox(bbox) && left.isdistpos_bbox(bbox)
-			&& near.isdistpos_bbox(bbox) && far.isdistpos_bbox(bbox)*/
+		top.isdistpos_bcube(bcube) && bottom.isdistpos_bcube(bcube) &&
+			right.isdistpos_bcube(bcube) && left.isdistpos_bcube(bcube)
+			&& near.isdistpos_bcube(bcube) && far.isdistpos_bcube(bcube)*/
 	}
 
 	/// If viewing frustum collides with a point.
-	pub fn collide_point(&self, point: Vec3<f32>) -> bool {
+	pub fn collide_point(&self, point: Vec3) -> bool {
 		(point - self.center).mag() <= self.radius
 
 /*		self.near.isdistpos_point(point)

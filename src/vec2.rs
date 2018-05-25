@@ -5,13 +5,10 @@
 use std::fmt;
 use std::ops;
 
-// Declare floating point type to use
-type Float = f32;
-
 /// Calculate linear interpolation of two values
 ///
 /// The t value should be between 0 and 1.
-fn float_lerp(a: Float, b: Float, t: Float) -> Float {
+fn float_lerp(a: f32, b: f32, t: f32) -> f32 {
 	b + (a - b) * t
 }
 
@@ -23,7 +20,7 @@ fn intersection(a0: Vec2, a1: Vec2, b0: Vec2, b1: Vec2) -> Option<Vec2> {
 	let av = a0 - a1;
 	let bv = b0 - b1;
 	let den = av * bv;
-	if den != 0 as Float {
+	if den != 0f32 {
 		let ca = a0 * a1;
 		let cb = b0 * b1;
 		let xn = bv.x * ca - av.x * cb;
@@ -38,9 +35,9 @@ fn intersection(a0: Vec2, a1: Vec2, b0: Vec2, b1: Vec2) -> Option<Vec2> {
 #[derive(Clone, Copy, PartialEq)]
 pub struct Vec2 {
 	/// X coordinate
-	pub x: Float,
+	pub x: f32,
 	/// Y coordinate
-	pub y: Float,
+	pub y: f32,
 }
 
 impl fmt::Debug for Vec2 {
@@ -65,27 +62,27 @@ impl ops::Sub for Vec2 {
 	}
 }
 
-impl ops::Mul<Float> for Vec2 {
+impl ops::Mul<f32> for Vec2 {
 	type Output = Self;
 
-	fn mul(self, s: Float) -> Self {
+	fn mul(self, s: f32) -> Self {
 		Vec2::new(self.x * s, self.y * s)
 	}
 }
 
 impl ops::Mul for Vec2 {
-	type Output = Float;
+	type Output = f32;
 
 	/// Calculate the cross product of two Vec2
-	fn mul(self, other: Self) -> Float {
+	fn mul(self, other: Self) -> f32 {
 		self.x * other.y - self.y * other.x
 	}
 }
 
-impl ops::Div<Float> for Vec2 {
+impl ops::Div<f32> for Vec2 {
 	type Output = Self;
 
-	fn div(self, s: Float) -> Self {
+	fn div(self, s: f32) -> Self {
 		Vec2::new(self.x / s, self.y / s)
 	}
 }
@@ -101,13 +98,13 @@ impl ops::Neg for Vec2 {
 #[allow(unused)]
 impl Vec2 {
 	/// Create a new Vec2
-	pub fn new(x: Float, y: Float) -> Self {
-		Vec2 { x: x, y: y }
+	pub fn new(x: f32, y: f32) -> Self {
+		Vec2 { x, y }
 	}
 
 	/// Create a zero Vec2
 	pub fn zero() -> Self {
-		Vec2::new(0 as Float, 0 as Float)
+		Vec2::new(0f32, 0f32)
 	}
 
 	/// Calculate the dot product of two `Vec2`s
@@ -116,7 +113,7 @@ impl Vec2 {
 	}
 
 	/// Get the magnitude of a Vec2
-	pub fn mag(self) -> Float {
+	pub fn mag(self) -> f32 {
 		self.x.hypot(self.y)
 	}
 
@@ -131,21 +128,21 @@ impl Vec2 {
 	}
 
 	/// Calculate the distance squared between two Vec2
-	pub fn dist_sq(self, other: Self) -> Float {
+	pub fn dist_sq(self, other: Self) -> f32 {
 		let dx = self.x - other.x;
 		let dy = self.y - other.y;
 		dx * dx + dy * dy
 	}
 
 	/// Calculate the distance between two Vec2
-	pub fn dist(self, other: Self) -> Float {
+	pub fn dist(self, other: Self) -> f32 {
 		self.dist_sq(other).sqrt()
 	}
 
 	/// Find the midpoint between two Vec2
 	pub fn midpoint(self, other: Self) -> Self {
-		let x = (self.x + other.x) / 2 as Float;
-		let y = (self.y + other.y) / 2 as Float;
+		let x = (self.x + other.x) / 2f32;
+		let y = (self.y + other.y) / 2f32;
 		Vec2::new(x, y)
 	}
 
@@ -169,7 +166,7 @@ impl Vec2 {
 	}
 
 	/// Calculate linear interpolation of two Vec2
-	pub fn lerp(self, other: Self, t: Float) -> Self {
+	pub fn lerp(self, other: Self, t: f32) -> Self {
 		let x = float_lerp(self.x, other.x, t);
 		let y = float_lerp(self.y, other.y, t);
 		Vec2::new(x, y)

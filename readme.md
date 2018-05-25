@@ -1,8 +1,9 @@
-# Aldaron's Memory Interface 0.6.0
+# Aldaron's Memory Interface
 Aldaron's Memory Interface provides data structures and casting macros.
 
 [Cargo](https://crates.io/crates/ami) /
-[Documentation](https://docs.rs/ami)
+[Documentation](https://docs.rs/ami) /
+[Change Log](http://plopgrizzly.com/ami/changelog.html)
 
 ## Features
 **ami**'s current features:

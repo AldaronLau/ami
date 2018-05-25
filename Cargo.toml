@@ -13,7 +13,7 @@
 
 [package]
 name = "ami"
-version = "0.7.0"
+version = "0.8.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -23,10 +23,8 @@ documentation = "https://docs.rs/ami"
 homepage = "http://plopgrizzly.com/ami"
 repository = "https://github.com/plopgrizzly/ami"
 
-readme = "README.md"
-description = """
-    Aldaron's Memory Interface provides data structures and casting macros.
-"""
+readme = "readme.md"
+description = "Data structures and casting macros"
 keywords = [ "memory", "ffi", "casting", "math", "geometry" ]
 categories = [ "os", "data-structures", "memory-management" ]
 

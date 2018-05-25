@@ -4,47 +4,44 @@
 
 use std::fmt;
 use std::ops;
-use std::cmp;
-
-use Pos;
 
 /// 3-dimensional vector
 #[derive(Clone, Copy, PartialEq)]
-pub struct Vec3<T: Copy + Clone> {
+pub struct Vec3 {
 	/// X coordinate
-	pub x: T,
+	pub x: f32,
 	/// Y coordinate
-	pub y: T,
+	pub y: f32,
 	/// Z coordinate
-	pub z: T,
+	pub z: f32,
 }
 
-impl<T> fmt::Debug for Vec3<T> where T: fmt::Debug + Copy + Clone {
+impl fmt::Debug for Vec3 {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "({:?},{:?},{:?})", self.x, self.y, self.z)
 	}
 }
 
-impl<T> ops::Add for Vec3<T> where T: ops::Add<Output=T> + Copy + Clone {
-	type Output = Vec3<T>;
+impl ops::Add for Vec3 {
+	type Output = Vec3;
 
 	fn add(self, other: Self) -> Self::Output {
 		Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
 	}
 }
 
-impl<T> ops::Sub for Vec3<T> where T: ops::Sub<Output=T> + Copy + Clone {
-	type Output = Vec3<T>;
+impl ops::Sub for Vec3 {
+	type Output = Vec3;
 
 	fn sub(self, other: Self) -> Self::Output {
 		Vec3::new(self.x - other.x, self.y - other.y, self.z - other.z)
 	}
 }
 
-impl<T> ops::Mul<T> for Vec3<T> where T: ops::Mul<Output=T> + Copy + Clone {
-	type Output = Vec3<T>;
+impl ops::Mul<f32> for Vec3 {
+	type Output = Vec3;
 
-	fn mul(self, s: T) -> Self::Output {
+	fn mul(self, s: f32) -> Self::Output {
 		Vec3::new(self.x * s, self.y * s, self.z * s)
 	}
 }
@@ -58,96 +55,50 @@ impl<T> ops::Mul<T> for Vec3<T> where T: ops::Mul<Output=T> + Copy + Clone {
 	}
 }*/
 
-impl<T> ops::Div<T> for Vec3<T> where T: ops::Div<Output=T> + Copy + Clone {
-	type Output = Vec3<T>;
+impl ops::Div<f32> for Vec3 {
+	type Output = Vec3;
 
-	fn div(self, s: T) -> Vec3<T> {
+	fn div(self, s: f32) -> Vec3 {
 		Vec3::new(self.x / s, self.y / s, self.z / s)
 	}
 }
 
-impl<T> ops::Neg for Vec3<T> where  T: ops::Neg<Output=T> + Copy + Clone {
-	type Output = Vec3<T>;
+impl ops::Neg for Vec3 {
+	type Output = Vec3;
 
-	fn neg(self) -> Vec3<T> {
+	fn neg(self) -> Vec3 {
 		Vec3::new(-self.x, -self.y, -self.z)
 	}
 }
 
-impl From<Vec3<f32>> for Vec3<i64> {
-	fn from(v: Vec3<f32>) -> Self {
-		Vec3::new(v.x as i64, v.y as i64, v.z as i64)
-	}
-}
-
-impl From<Vec3<f32>> for Vec3<i32> {
-	fn from(v: Vec3<f32>) -> Self {
-		Vec3::new(v.x as i32, v.y as i32, v.z as i32)
-	}
-}
-
-impl From<Vec3<i64>> for Vec3<f32> {
-	fn from(v: Vec3<i64>) -> Self {
-		Vec3::new(v.x as f32, v.y as f32, v.z as f32)
-	}
-}
-
-impl From<Vec3<i32>> for Vec3<f32> {
-	fn from(v: Vec3<i32>) -> Self {
-		Vec3::new(v.x as f32, v.y as f32, v.z as f32)
-	}
-}
-
-impl Pos for Vec3<f32> {
-	fn posf(&self) -> Vec3<f32> {
-		*self
-	}
-
-	fn posi(&self) -> Vec3<i32> {
-		(*self).into()
-	}
-}
-
-impl Pos for Vec3<i32> {
-	fn posi(&self) -> Vec3<i32> {
-		*self
-	}
-
-	fn posf(&self) -> Vec3<f32> {
-		(*self).into()
-	}
-}
-
-impl<T> Vec3<T> where T: Copy + Clone {
+impl Vec3 {
 	/// Create a new Vec3
-	pub fn new(x: T, y: T, z: T) -> Vec3<T> {
+	pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
 		Vec3 { x, y, z }
 	}
 
 	/// Find the minimum ordinal value
-	pub(crate) fn min_p(self) -> T where T: cmp::Ord {
+	pub(crate) fn min_p(self) -> f32 {
 		self.x.min(self.y).min(self.z)
 	}
 
 	/// Find the maximum ordinal value
-	pub(crate) fn max_p(self) -> T where T: cmp::Ord {
+	pub(crate) fn max_p(self) -> f32 {
 		self.x.max(self.y).max(self.z)
 	}
 
 	/// Get the magnitude of a Vec3
-	pub fn mag(self) -> f32 where Self: Into<Vec3<f32>> {
-		let point: Vec3<f32> = self.into();
-
-		(point.x).hypot(point.y).hypot(point.z) as f32
+	pub fn mag(self) -> f32 {
+		(self.x).hypot(self.y).hypot(self.z)
 	}
-}
 
-impl Vec3<f32> {
 	/// Multiply matrix onto Vec3 (as directional vector)
 	pub fn transform_dir(self, rhs: ::Mat4) -> Self {
-		let x = rhs.0[0]*self.x + rhs.0[4]*self.y + rhs.0[8]*self.z;
-		let y = rhs.0[1]*self.x + rhs.0[5]*self.y + rhs.0[9]*self.z;
-		let z = rhs.0[2]*self.x + rhs.0[6]*self.y + rhs.0[10]*self.z;
+		let rhs = rhs.to_f32_array();
+
+		let x = rhs[0]*self.x + rhs[4]*self.y + rhs[8]*self.z;
+		let y = rhs[1]*self.x + rhs[5]*self.y + rhs[9]*self.z;
+		let z = rhs[2]*self.x + rhs[6]*self.y + rhs[10]*self.z;
 
 		Self::new(x, y, z)
 	}
@@ -179,7 +130,7 @@ impl Vec3<f32> {
 	}
 
 	/// Calculate the dot product of two `Vec3`s
-	pub fn dot(&self, other: Vec3<f32>) -> f32 {
+	pub fn dot(&self, other: Vec3) -> f32 {
 		self.x * other.x + self.y * other.y + self.z * other.z
 	}
 
@@ -194,7 +145,7 @@ impl Vec3<f32> {
 	}
 
 	/// Calculate angle between 2 Vec3's
-	pub fn angle(&self, other: Vec3<f32>) -> f32 {
+	pub fn angle(&self, other: Vec3) -> f32 {
 		let mag1 = (self.x as f64)
 			.hypot(self.y as f64)
 			.hypot(self.z as f64);

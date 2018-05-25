@@ -14,21 +14,23 @@
 
 mod mat4;
 mod bbox;
+mod bcube;
 mod frustum;
 mod octree;
 mod plane;
-mod pos;
+mod collider;
 mod vec2;
 mod vec3;
 mod vec4;
 mod parent;
 
 pub use mat4::*;
+pub use bcube::*;
 pub use bbox::*;
 pub use frustum::*;
 pub use octree::*;
 pub use plane::*;
-pub use pos::*;
+pub use collider::*;
 pub use vec2::*;
 pub use vec3::*;
 pub use vec4::*;

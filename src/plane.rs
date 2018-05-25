@@ -4,13 +4,13 @@
 use std::fmt;
 
 use Vec3;
-use BBox;
+use BCube;
 
 #[derive(Clone, Copy, PartialEq)]
 /// A `Plane`
 pub struct Plane {
 	/// A normalized directional vector for the direction the plane faces.
-	pub facing: Vec3<f32>,
+	pub facing: Vec3,
 	/// The offset of the plane from the origin in the direction of `facing`
 	pub offset: f32,
 }
@@ -23,21 +23,21 @@ impl fmt::Debug for Plane {
 
 impl Plane {
 	/// Create a new plane from directional vector, and offset from origin.
-	pub fn new(dir: Vec3<f32>, ofs: f32) -> Plane {
+	pub fn new(dir: Vec3, ofs: f32) -> Plane {
 		Plane { facing: dir.normalize(), offset: ofs }
 	}
 
 	/// Returns true if distance from Plane to point is positive.
-	pub fn isdistpos_point(&self, p: Vec3<f32>) -> bool {
+	pub fn isdistpos_point(&self, p: Vec3) -> bool {
 		(self.facing.x * (p.x - (self.facing.x * self.offset)))
 			+ (self.facing.y * (p.y - (self.facing.y * self.offset)))
 			+ (self.facing.z * (p.z - (self.facing.z * self.offset)))
 			 >= 0.0
 	}
 
-	/// Returns true if distance from Plane to BBox is positive
-	pub fn isdistpos_bbox(&self, bbox: BBox<i32>) -> bool {
-		let (_, b) = bbox.pn_pair_from_normal(self.facing);
+	/// Returns true if distance from Plane to BCube is positive
+	pub fn isdistpos_bcube(&self, bcube: BCube) -> bool {
+		let (_, b) = bcube.pn_pair_from_normal(self.facing);
 
 /*		let pos_side = self.facing.dot(b) + self.offset;
 //		let pos_side = (self.facing.x * a.x)+(self.facing.y * a.y)+(self.facing.z * a.z)+self.offset;
@@ -54,7 +54,7 @@ impl Plane {
 
 		true
 
-/*		let points = bbox.all_points();
+/*		let points = bcube.all_points();
 
 		for point in points.iter() {
 			// If point within, it's good!
@@ -63,9 +63,9 @@ impl Plane {
 			}
 		}*/
 
-//		let (a, b) = bbox.pn_pair_from_normal(self.facing);
+//		let (a, b) = bcube.pn_pair_from_normal(self.facing);
 
-		// If the extremes of the BBox is within the bounded area
+		// If the extremes of the BCube is within the bounded area
 //		self.isdistpos_point(a) || !self.isdistpos_point(b)
 
 //		false
@@ -92,7 +92,7 @@ fn test_plane_distpos() {
 }*/
 
 /*#[test]
-fn test_bbox_in_plane() {
+fn test_bcube_in_plane() {
 	let t = ::Transform::new()
 		.rotate(-10.0, 20.0, -5.0)
 		.translate(500.0, -100.0, -115.0)
@@ -129,23 +129,23 @@ fn test_bbox_in_plane() {
 		::Transform::new()
 			.rotate(0.0, 1.75, 0.0)), -2.5);
 
-	assert!(a.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(b.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(c.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == false);
-	assert!(d.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(e.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(f.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(g.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(h.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(i.isdistpos_bbox(BBox::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(a.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(b.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(c.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == false);
+	assert!(d.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(e.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(f.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(g.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(h.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(i.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
 
-	assert!(a.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(b.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(c.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == false);
-	assert!(d.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(e.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(f.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(g.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(h.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(i.isdistpos_bbox(BBox::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(a.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(b.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(c.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == false);
+	assert!(d.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(e.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(f.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(g.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(h.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(i.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
 }*/

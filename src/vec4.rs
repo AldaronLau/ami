@@ -3,41 +3,40 @@
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use std::fmt;
-use std::cmp;
 
 /// 4-dimensional vector
 #[derive(Clone, Copy, PartialEq)]
-pub struct Vec4<T: Copy + Clone> {
+pub struct Vec4 {
 	/// X coordinate
-	pub x: T,
+	pub x: f32,
 	/// Y coordinate
-	pub y: T,
+	pub y: f32,
 	/// Z coordinate
-	pub z: T,
+	pub z: f32,
 	/// W coordinate
-	pub w: T,
+	pub w: f32,
 }
 
-impl<T> fmt::Debug for Vec4<T> where T: fmt::Debug + Copy + Clone {
+impl fmt::Debug for Vec4 {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f,"({:?},{:?},{:?},{:?})",self.x,self.y,self.z,self.w)
+		write!(f,"({},{},{},{})",self.x,self.y,self.z,self.w)
 	}
 }
 
 #[allow(unused)]
-impl<T> Vec4<T> where T: Copy + Clone {
+impl Vec4 {
 	/// Create a new Vec4
-	pub fn new(x: T, y: T, z: T, w: T) -> Vec4<T> {
+	pub fn new(x: f32, y: f32, z: f32, w: f32) -> Vec4 {
 		Vec4 { x, y, z, w }
 	}
 
 	/// Find the minimum ordinal value
-	pub(crate) fn min_p(self) -> T where T: cmp::Ord {
+	pub(crate) fn min_p(self) -> f32 {
 		self.x.min(self.y).min(self.z).min(self.w)
 	}
 
 	/// Find the maximum ordinal value
-	pub(crate) fn max_p(self) -> T where T: cmp::Ord {
+	pub(crate) fn max_p(self) -> f32 {
 		self.x.max(self.y).max(self.z).max(self.w)
 	}
 }
