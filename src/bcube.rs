@@ -56,6 +56,7 @@ impl BCube {
 	}
 
 	fn move_center(&self, p: BBox) -> Vec3 {
+		// TODO: does this even work right?
 		let min_p = self.min_p();
 		if p.min.min_p() < min_p {
 			return Vec3::new(min_p, min_p, min_p);
