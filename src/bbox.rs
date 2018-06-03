@@ -36,6 +36,17 @@ impl ops::Add<Vec3> for BBox {
 	}
 }
 
+impl Into<BCube> for BBox {
+	fn into(self) -> BCube {
+		let span = self.max - self.min;
+
+		BCube {
+			center: self.center(),
+			half_len: span.x.max(span.y).max(span.z) / 2.0,
+		}
+	}
+}
+
 impl BBox {
 	/// Create an new `BBox` at position `p`.
 	pub fn new(min: Vec3, max: Vec3) -> BBox {
