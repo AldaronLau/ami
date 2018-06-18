@@ -8,7 +8,7 @@ use Vec3;
 use BBox;
 
 /// Bounding cube
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct BCube {
 	pub(crate) center: Vec3,
 	pub(crate) half_len: f32,
@@ -33,36 +33,30 @@ impl BCube {
 		BCube { center: p, half_len: 1.0 }
 	}
 
-	fn min_p(&self) -> f32 {
-		if self.half_len > 0.0 {
-			self.center.min_p() - self.half_len
-		} else {
-			self.center.min_p()
-		}
-	}
-
-	fn max_p(&self) -> f32 {
-		if self.half_len > 0.0 {
-			self.center.max_p() + self.half_len
-		} else {
-			self.center.max_p()
-		}
-	}
-
 	/// Extend the `BCube` to accommodate for `BBox`
 	pub fn extend(&mut self, p: BBox) {
+//		println!("Extend: {:?}", p);
 		self.center = self.move_center(p);
 		self.half_len *= 2.0;
 	}
 
 	fn move_center(&self, p: BBox) -> Vec3 {
-		// TODO: does this even work right?
-		let min_p = self.min_p();
-		if p.min.min_p() < min_p {
-			return Vec3::new(min_p, min_p, min_p);
-		} else {
-			let max_p = self.max_p();
-			return Vec3::new(max_p, max_p, max_p);
+		let (maxx, maxy, maxz) = p.bcube_sides(*self);
+
+		println!("MAX: {} {} {}", maxx, maxy, maxz);
+
+		let min = self.center - self.half_len;
+		let max = self.center + self.half_len;
+
+		match (maxx, maxy, maxz) {
+			(false, false, false) => Vec3::new(min.x, min.y, min.z),
+			(false, false, true) => Vec3::new(min.x, min.y, max.z),
+			(false, true, false) => Vec3::new(min.x, max.y, min.z),
+			(false, true, true) => Vec3::new(min.x, max.y, max.z),
+			(true, false, false) => Vec3::new(max.x, min.y, min.z),
+			(true, false, true) => Vec3::new(max.x, min.y, max.z),
+			(true, true, false) => Vec3::new(max.x, max.y, min.z),
+			(true, true, true) => Vec3::new(max.x, max.y, max.z),
 		}
 	}
 
@@ -71,11 +65,11 @@ impl BCube {
 		let Vec3 { x, y, z } = self.center;
 		let hl = self.half_len;
 		(p.x >= x - hl) &&
-		(p.x <  x + hl) &&
+		(p.x < x + hl) &&
 		(p.y >= y - hl) &&
-		(p.y <  y + hl) &&
+		(p.y < y + hl) &&
 		(p.z >= z - hl) &&
-		(p.z <  z + hl)
+		(p.z < z + hl)
 	}
 
 	/// Get two opposite points that are the bounds of the BCube.
