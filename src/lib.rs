@@ -1,14 +1,24 @@
-// "ami" crate - Licensed under the MIT LICENSE
-//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+// "ami" - Aldaron's Memory Interface
 //
+// Copyright Douglas P. Lau 2017.
+// Copyright Jeron A. Lau 2017 - 2018.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// https://www.boost.org/LICENSE_1_0.txt)
+//
+//! # [Aldaron's Memory Interface](https://crates.io/crates/ami)
 //! Aldaron's Memory Interface provides data structures and casting macros.
+//! 
+//! ## Features
+//! **ami**'s current features:
+//! * Casting pointers with the `cast!()` and `cast_mut!()` macros
+//! * Provide geometrical data structs, an do math with them
+//! * Automatic-size-adjusting octree
 
 #![warn(missing_docs)]
 #![doc(
-	html_logo_url = "https://raw.githubusercontent.com/plopgrizzly\
-		/ami/master/res/icon.png",
-	html_favicon_url = "https://raw.githubusercontent.com/plopgrizzly\
-		/ami/master/res/symbol.svg",
+	html_logo_url = "https://plopgrizzly.com/ami/icon.png",
+	html_favicon_url = "https://plopgrizzly.com/ami/icon.png",
 	html_root_url = "http://plopgrizzly.com/ami/"
 )]
 

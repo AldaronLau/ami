@@ -1,5 +1,4 @@
-# "ami" crate - Licensed under the MIT LICENSE
-#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# "ami" - Aldaron's Memory Interface
 #                             _        _
 #                            /@\——————/@\
 # .———  .                   |   o    o   |     .————      .            .
@@ -10,25 +9,27 @@
 # |     |   ———   |       |                |    ————  |   | :——— :———  |   |
 #                 |        \              /                              __/
 #                           ¯————————————¯
+#
+# Copyright Douglas P. Lau 2017.
+# Copyright Jeron A. Lau 2017 - 2018.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt)
 
 [package]
 name = "ami"
-version = "0.9.1"
+version = "0.9.2"
 authors = [
-	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
+	"Douglas P. Lau <doug.p.lau@gmail.com>"
 ]
-
-license = "MIT"
+license = "BSL-1.0"
 documentation = "https://docs.rs/ami"
 homepage = "https://plopgrizzly.com/ami"
 repository = "https://github.com/plopgrizzly/ami"
-
 readme = "readme.md"
 description = "Data structures and casting macros"
 keywords = [ "memory", "octree", "math", "geometry" ]
 categories = [ "os", "data-structures", "memory-management" ]
 
-exclude = [
-	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
-	"_config.yml", "ISSUE_TEMPLATE.md"
-]
+[dependencies]
