@@ -325,7 +325,7 @@ impl Node {
 			(false, false, false) => 7,
 		});
 
-		println!("c {:?} min {:?} max {:?} -> {:?}", c, p.min, p.max, a);
+//		println!("c {:?} min {:?} max {:?} -> {:?}", c, p.min, p.max, a);
 		a
 	}
 
@@ -408,7 +408,7 @@ impl<T> Octree<T> where T: Collider {
 		self.n_colliders += 1;
 
 //		println!("ADD END {:?} to {}", id, self);
-		println!("ADDED {}", {let i:usize = id.into();i});
+//		println!("ADDED {}", {let i:usize = id.into();i});
 
 		id
 	}
@@ -453,7 +453,7 @@ impl<T> Octree<T> where T: Collider {
 		let root = self.root;
 		self.add_inside(id, root, bcube);
 
-		println!("{}", self);
+//		println!("{}", self);
 	}
 
 	/// Grow the root node
@@ -476,7 +476,7 @@ impl<T> Octree<T> where T: Collider {
 		self.nodes[{ let a: usize = id.into(); a }].child[ch] = self.root;
 		self.root = id;
 
-		println!("Extended: {}", self);
+//		println!("Extended: {}", self);
 	}
 
 	/// Add a point within the bounds
@@ -574,7 +574,7 @@ impl<T> Octree<T> where T: Collider {
 
 	/// Remove a point from the octree
 	pub fn remove(&mut self, id: Id) -> T {
-		println!("REMOVE {}", {let i:usize = id.into();i});
+//		println!("REMOVE {}", {let i:usize = id.into();i});
 //		println!("REMOVE BEGIN {} from {}", { let a: usize = id.into(); a }, self);
 
 		// Must have colliders already in the octree.
