@@ -43,7 +43,7 @@ impl BCube {
 	fn move_center(&self, p: BBox) -> Vec3 {
 		let (maxx, maxy, maxz) = p.bcube_sides(*self);
 
-		println!("MAX: {} {} {}", maxx, maxy, maxz);
+//		println!("MAX: {} {} {}", maxx, maxy, maxz);
 
 		let min = self.center - self.half_len;
 		let max = self.center + self.half_len;
@@ -78,6 +78,12 @@ impl BCube {
 			self.half_len);
 
 		(self.center + half_cube, self.center - half_cube)
+	}
+
+	/// Turn into a bbox.
+	pub fn to_bbox(&self) -> BBox {
+		let (max, min) = self.to_point_pair();
+		BBox::new(min, max)
 	}
 
 	/// Get all 6 points or the `BCube`.

@@ -237,8 +237,6 @@ impl Node {
 
 	/// Remove a collider from a branch node.
 	fn branch_remove_collider(&mut self, id: Id) -> Option<()> {
-		println!("RA {}", self);
-
 		assert!(self.is_branch());
 		// Look for collider in this branch.
 		for i in 8..=14 {
@@ -276,57 +274,63 @@ impl Node {
 		}
 	}
 
-	/// Determine which child for a branch point
-	fn which_child(c: Vec3, p: Vec3) -> usize {
-		match (p.x < c.x, p.y < c.y, p.z < c.z) {
-			(true,  true,  true)  => 0,
-			(true,  true,  false) => 1,
-			(true,  false, true)  => 2,
-			(true,  false, false) => 3,
-			(false, true,  true)  => 4,
-			(false, true,  false) => 5,
-			(false, false, true)  => 6,
-			(false, false, false) => 7,
-		}
-	}
-
 	/// Determine which child for a branch point (2)
-	fn which_child2(c: Vec3, p: Vec3) -> usize {
-		match (c.x >= p.x, c.y >= p.y, c.z >= p.z) {
-			(true,  true,  true)  => 0,
-			(true,  true,  false) => 1,
-			(true,  false, true)  => 2,
-			(true,  false, false) => 3,
-			(false, true,  true)  => 4,
-			(false, true,  false) => 5,
-			(false, false, true)  => 6,
-			(false, false, false) => 7,
-		}
+	fn which_child2(c: Vec3, p: Vec3) -> [bool; 3] {
+		[p.x < c.x, p.y < c.y, p.z < c.z]
 	}
 
 	/// Determine which child for a branch bbox, if there is one it fully
 	/// fits into.
-	fn which_child_bbox(c: Vec3, p: BBox) -> Option<usize> {
-		let min = Self::which_child(c, p.min);
-		let max = Self::which_child(c, p.max);
-		let min2 = Self::which_child2(c, p.min);
-		let max2 = Self::which_child2(c, p.max);
-
-		println!("WCHB {} {} {} {}", min, max, min2, max2);
-
-		if min == max || min == max2 {
-			Some(min)
-		} else if min2 == max || min2 == max2 {
-			Some(min2)
-		} else {
-			None
+	fn which_child_bbox(c: Vec3, mut p: BBox) -> Option<usize> {
+		if p.min.x >= c.x - ::std::f32::EPSILON && p.min.x <= c.x + ::std::f32::EPSILON {
+//			println!("MATCHED minX");
+			p.min.x = p.max.x;
 		}
+		if p.min.y >= c.y - ::std::f32::EPSILON && p.min.y <= c.y + ::std::f32::EPSILON {
+//			println!("MATCHED minY");
+			p.min.y = p.max.y;
+		}
+		if p.min.z >= c.z - ::std::f32::EPSILON && p.min.z <= c.z + ::std::f32::EPSILON {
+//			println!("MATCHED minZ");
+			p.min.z = p.max.z;
+		}
+		if p.max.x >= c.x - ::std::f32::EPSILON && p.max.x <= c.x + ::std::f32::EPSILON {
+//			println!("MATCHED maxX");
+			p.max.x = p.min.x;
+		}
+		if p.max.y >= c.y - ::std::f32::EPSILON && p.max.y <= c.y + ::std::f32::EPSILON {
+//			println!("MATCHED maxY");
+			p.max.y = p.min.y;
+		}
+		if p.max.z >= c.z - ::std::f32::EPSILON && p.max.z <= c.z + ::std::f32::EPSILON {
+//			println!("MATCHED maxZ");
+			p.max.z = p.min.z;
+		}
+
+		let min = Self::which_child2(c, p.min);
+		let max = Self::which_child2(c, p.max);
+
+		if max != min {
+			return None;
+		}
+
+		let a = Some(match (min[0], min[1], min[2]) {
+			(true,  true,  true)  => 0,
+			(true,  true,  false) => 1,
+			(true,  false, true)  => 2,
+			(true,  false, false) => 3,
+			(false, true,  true)  => 4,
+			(false, true,  false) => 5,
+			(false, false, true)  => 6,
+			(false, false, false) => 7,
+		});
+
+		println!("c {:?} min {:?} max {:?} -> {:?}", c, p.min, p.max, a);
+		a
 	}
 
 	/// Calculate the center of a child node
 	fn child_center(ch: usize, c: Vec3, h: f32) -> Vec3 {
-		let h = if h < 0.000001 { 1.0 } else { h };
-
 		match ch {
 			0 => Vec3::new(c.x - h, c.y - h, c.z - h),
 			1 => Vec3::new(c.x - h, c.y - h, c.z + h),
@@ -342,7 +346,7 @@ impl Node {
 
 	/// Calculate the bounding box of a child node
 	fn child_bcube(ch: usize, bcube: BCube) -> BCube {
-		assert!(bcube.half_len > 0.0);
+		assert!(bcube.half_len > 0.1);
 		let half_len = bcube.half_len / 2.0;
 		let center = Node::child_center(ch, bcube.center, half_len);
 		BCube { center: center, half_len: half_len }
@@ -380,11 +384,9 @@ impl<T> Octree<T> where T: Collider {
 
 	/// Add a point in the octree
 	pub fn add(&mut self, point: T) -> Id {
-		println!("ADD<Before> to {}", self);
-
+//		println!("ADD BEGIN");
 		// Add to colliders and get the id.
 		let id = if let Some(id) = self.collider_garbage.pop() {
-			println!("{:?}", id);
 			unsafe {
 				::std::ptr::copy_nonoverlapping(&point,
 					&mut self.colliders[{ let id: usize = id.into(); id }], 1);
@@ -405,7 +407,8 @@ impl<T> Octree<T> where T: Collider {
 		// Increment number of colliders, and return id
 		self.n_colliders += 1;
 
-		println!("ADD<After> to {}", self);
+//		println!("ADD END {:?} to {}", id, self);
+		println!("ADDED {}", {let i:usize = id.into();i});
 
 		id
 	}
@@ -422,7 +425,7 @@ impl<T> Octree<T> where T: Collider {
 		// Make the root bcube contain the bbox of this first point.
 		self.bcube = self[id].bbox().into();
 
-		println!("ADD_0 {:?} / {:?}", self.bcube.center, self[id].bbox());
+//		println!("ADD_0 {:?} / {:?}", self.bcube, self[id].bbox());
 
 		// Build the branch and add a collider.
 		let i = self.new_branch();
@@ -442,13 +445,15 @@ impl<T> Octree<T> where T: Collider {
 		// While the bbox isn't within the root bcube, expand root bcube
 		while !bbox.collide_bcube(self.bcube) {
 			self.grow_root(bbox);
-			println!("GROW {:?}", self.bcube.center);
+//			println!("GROW {:?}", self.bcube);
 		}
 
 		// Add id inside the root bcube.
 		let bcube = self.bcube;
 		let root = self.root;
 		self.add_inside(id, root, bcube);
+
+		println!("{}", self);
 	}
 
 	/// Grow the root node
@@ -458,6 +463,7 @@ impl<T> Octree<T> where T: Collider {
 		assert!(self.nodes[{ let a: usize = self.root.into(); a }].is_branch());
 
 		// Get the old bcube center, to see which octant it goes in.
+		let old_bc = self.bcube;
 		let center = self.bcube.center;
 
 		// Extend bcube to attempt to accomodate for bbox.
@@ -465,10 +471,12 @@ impl<T> Octree<T> where T: Collider {
 		self.bcube.extend(bbox);
 
 		// Create new container branch for old root branch.
-		let ch = Node::which_child(self.bcube.center, center);
+		let ch = Node::which_child_bbox(self.bcube.center, old_bc.to_bbox()).unwrap();
 		let id = self.new_branch();
 		self.nodes[{ let a: usize = id.into(); a }].child[ch] = self.root;
 		self.root = id;
+
+		println!("Extended: {}", self);
 	}
 
 	/// Add a point within the bounds
@@ -566,7 +574,8 @@ impl<T> Octree<T> where T: Collider {
 
 	/// Remove a point from the octree
 	pub fn remove(&mut self, id: Id) -> T {
-		println!("REMOVE {}"/* from {}"*/, { let a: usize = id.into(); a }/*, self*/);
+		println!("REMOVE {}", {let i:usize = id.into();i});
+//		println!("REMOVE BEGIN {} from {}", { let a: usize = id.into(); a }, self);
 
 		// Must have colliders already in the octree.
 		assert!(self.n_colliders > 0);
@@ -578,18 +587,18 @@ impl<T> Octree<T> where T: Collider {
 		// Id is garbage now.
 		self.collider_garbage.push(id);
 		// Shrink root if: 1 branch, no nodes
-		while let Some(ch) = {
+		loop {
 			let root: usize = self.root.into();
-			self.nodes[root].branch_is_one()
-		} {
-			let root: usize = self.root.into();
-
-			// Add root to garbage.
-			self.garbage.push(self.root);
-			// Set new root
-			self.root = self.nodes[root].child[ch];
-			//
-			self.bcube = Node::child_bcube(ch, bcube);
+			if let Some(ch) = self.nodes[root].branch_is_one() {
+				// Add root to garbage.
+				self.garbage.push(self.root);
+				// Set new root
+				self.root = self.nodes[root].child[ch];
+				//
+				self.bcube = Node::child_bcube(ch, self.bcube);
+			} else {
+				break;
+			}
 		}
 		// Decrement number of colliders
 		self.n_colliders -= 1;
@@ -607,7 +616,9 @@ impl<T> Octree<T> where T: Collider {
 			self.clear();
 		}
 
-		println!("REMOVED {}", self);
+//		println!("REMOVED {}", self);
+
+//		println!("REMOVE END");
 
 		ret
 	}
@@ -626,17 +637,14 @@ impl<T> Octree<T> where T: Collider {
 		// Must be a branch
 		assert!(self.nodes[node_id].is_branch());
 
-//		println!("RI {} {}", { let a: usize = id.into(); a }, node_id);
-//		println!("ND {:?}", self.nodes[node_id]);
-
 		// Could be found on a lower level.
-		println!("RRRR {:?} / {:?}", bcube.center, bbox);
+//		println!("R-INSIDE {:?} / {:?}", bcube, bbox);
 		if let Some(ch) = Node::which_child_bbox(bcube.center, bbox) {
-			println!("WCHBBR {}", ch);
+//			println!("WCHBBR {}", ch);
 			let j = self.nodes[node_id].child[ch];
 
 			if j.is_some() {
-				println!("SOM");
+//				println!("SOM");
 
 				// Yes, there is a branch here, where the Id is!
 				// Remove it from inside this branch.
@@ -662,12 +670,12 @@ impl<T> Octree<T> where T: Collider {
 					None // nothing to be removed.
 				}
 			} else {
-				println!("SON");
+//				println!("SON");
 				// No, we don't have to descend - it's here!
 				self.remove_from_branch(id, node_id)
 			}
 		} else {
-			println!("NON");
+//			println!("NON");
 			// No, we can't descend - it's here!
 			self.remove_from_branch(id, node_id)
 		}
@@ -675,7 +683,7 @@ impl<T> Octree<T> where T: Collider {
 
 	/// Remove from branch, including any links that may exist.
 	fn remove_from_branch(&mut self, id: Id, node_id: usize) -> Option<Id> {
-		println!("RFB {} {}", node_id, {let a:usize=id.into();a});
+//		println!("RFB {} {}", node_id, {let a:usize=id.into();a});
 
 		// Remove the collider
 		if self.nodes[node_id].remove_collider(id)
