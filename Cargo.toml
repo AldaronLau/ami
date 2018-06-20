@@ -13,7 +13,7 @@
 
 [package]
 name = "ami"
-version = "0.9.0"
+version = "0.9.1"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]

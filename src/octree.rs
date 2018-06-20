@@ -464,7 +464,6 @@ impl<T> Octree<T> where T: Collider {
 
 		// Get the old bcube center, to see which octant it goes in.
 		let old_bc = self.bcube;
-		let center = self.bcube.center;
 
 		// Extend bcube to attempt to accomodate for bbox.
 		// This function is limited to growing twice in size.
