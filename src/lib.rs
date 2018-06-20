@@ -28,7 +28,7 @@ pub use mat4::*;
 pub use bcube::*;
 pub use bbox::*;
 pub use frustum::*;
-pub use octree::*;
+pub use octree::{ Octree, Id };
 pub use plane::*;
 pub use collider::*;
 pub use vec2::*;

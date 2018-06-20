@@ -34,6 +34,7 @@ pub struct Octree<T: Collider> {
 const LINK: usize = 15;			// link to coincident leaf nodes
 const LEAF: u32 = 0xFF_FF_FF_FF;	// max u32 value (invalid handle)
 
+/// A 32-bit index value.
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Id(u32);
 
@@ -79,6 +80,44 @@ impl Into<usize> for Id {
 struct Node {
 	/// child node handles
 	child: [Id; 16],
+}
+
+impl fmt::Display for Node {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if self.is_leaf() {
+			let l = self.link();
+			if l.is_some() {
+				write!(f, " LINK ")?;
+			}
+			for i in 0..=14 {
+				let id = self.child[i];
+				if id.is_some() {
+					let id: usize = id.into();
+					write!(f, "{} ", id)?;
+				}
+			}	
+		} else {
+			write!(f, "Branch: [")?;
+			for i in 8..=14 {
+				let id = self.child[i];
+				if id.is_some() {
+					let id: usize = id.into();
+					write!(f, "{} ", id)?;
+				}
+			}
+			write!(f, "] -D [")?;
+			for i in 0..8 {
+				let id = self.child[i];
+				if id.is_some() {
+					let id: usize = id.into();
+					write!(f, "{}:{}", i, id)?;
+				}
+			}
+			write!(f, "];")?;
+		}
+
+		Ok(())
+	}
 }
 
 impl fmt::Debug for Node {
@@ -157,14 +196,14 @@ impl Node {
 	fn branch_is_one(&self) -> Option<usize> {
 		assert!(self.is_branch());
 		// First 8 are branches.
-		let mut found = Id::none();
+		let mut found = None;
 
-		for i in &self.child[..8] { // First 8 are branches
-			if i.is_some() {
+		for i in 0..8 { // First 8 are branches
+			if self.child[i].is_some() {
 				if found.is_some() { // 2, not 1
 					return None;
 				} else {
-					found = *i;
+					found = Some(i);
 				}
 			}
 		}
@@ -174,20 +213,15 @@ impl Node {
 			}
 		}
 
-		if found.is_some() { // 1
-			Some(found.into())
-		} else { // None
-			None
-		}
+		found
 	}
 
 	/// Find the first open child slot in a branch, None if full.
 	fn branch_open_slot(&self) -> Option<usize> {
 		assert!(self.is_branch());
 		// Skip 0-7 as that is descending the octree, and skip 15 (link)
-		let slot = self.child[8..=14].iter().position(|v| v.is_none());
-		if let Some(s) = slot {
-			return Some(s); // same as slot
+		for i in 8..=14 {
+			if self.child[i].is_none() { return Some(i) }
 		}
 		None
 	}
@@ -240,9 +274,47 @@ impl Node {
 		}
 	}
 
-	/// Determine which child for a branch point
-	fn which_child(c: Vec3, p: Vec3) -> usize {
-		match (p.x < c.x, p.y < c.y, p.z < c.z) {
+	/// Determine which child for a branch point (2)
+	fn which_child2(c: Vec3, p: Vec3) -> [bool; 3] {
+		[p.x < c.x, p.y < c.y, p.z < c.z]
+	}
+
+	/// Determine which child for a branch bbox, if there is one it fully
+	/// fits into.
+	fn which_child_bbox(c: Vec3, mut p: BBox) -> Option<usize> {
+		if p.min.x >= c.x - ::std::f32::EPSILON && p.min.x <= c.x + ::std::f32::EPSILON {
+//			println!("MATCHED minX");
+			p.min.x = p.max.x;
+		}
+		if p.min.y >= c.y - ::std::f32::EPSILON && p.min.y <= c.y + ::std::f32::EPSILON {
+//			println!("MATCHED minY");
+			p.min.y = p.max.y;
+		}
+		if p.min.z >= c.z - ::std::f32::EPSILON && p.min.z <= c.z + ::std::f32::EPSILON {
+//			println!("MATCHED minZ");
+			p.min.z = p.max.z;
+		}
+		if p.max.x >= c.x - ::std::f32::EPSILON && p.max.x <= c.x + ::std::f32::EPSILON {
+//			println!("MATCHED maxX");
+			p.max.x = p.min.x;
+		}
+		if p.max.y >= c.y - ::std::f32::EPSILON && p.max.y <= c.y + ::std::f32::EPSILON {
+//			println!("MATCHED maxY");
+			p.max.y = p.min.y;
+		}
+		if p.max.z >= c.z - ::std::f32::EPSILON && p.max.z <= c.z + ::std::f32::EPSILON {
+//			println!("MATCHED maxZ");
+			p.max.z = p.min.z;
+		}
+
+		let min = Self::which_child2(c, p.min);
+		let max = Self::which_child2(c, p.max);
+
+		if max != min {
+			return None;
+		}
+
+		let a = Some(match (min[0], min[1], min[2]) {
 			(true,  true,  true)  => 0,
 			(true,  true,  false) => 1,
 			(true,  false, true)  => 2,
@@ -251,26 +323,14 @@ impl Node {
 			(false, true,  false) => 5,
 			(false, false, true)  => 6,
 			(false, false, false) => 7,
-		}
-	}
+		});
 
-	/// Determine which child for a branch bbox, if there is one it fully
-	/// fits into.
-	fn which_child_bbox(c: Vec3, p: BBox) -> Option<usize> {
-		let min = Self::which_child(c, p.min);
-		let max = Self::which_child(c, p.max);
-
-		if min == max {
-			Some(min)
-		} else {
-			None
-		}
+//		println!("c {:?} min {:?} max {:?} -> {:?}", c, p.min, p.max, a);
+		a
 	}
 
 	/// Calculate the center of a child node
 	fn child_center(ch: usize, c: Vec3, h: f32) -> Vec3 {
-		let h = if h < 0.000001 { 1.0 } else { h };
-
 		match ch {
 			0 => Vec3::new(c.x - h, c.y - h, c.z - h),
 			1 => Vec3::new(c.x - h, c.y - h, c.z + h),
@@ -286,7 +346,7 @@ impl Node {
 
 	/// Calculate the bounding box of a child node
 	fn child_bcube(ch: usize, bcube: BCube) -> BCube {
-		assert!(bcube.half_len > 0.0);
+		assert!(bcube.half_len > 0.1);
 		let half_len = bcube.half_len / 2.0;
 		let center = Node::child_center(ch, bcube.center, half_len);
 		BCube { center: center, half_len: half_len }
@@ -304,7 +364,7 @@ impl Node {
 impl<T> Octree<T> where T: Collider {
 	/// Create a new octree
 	pub fn new() -> Octree<T> {
-		Octree {
+		let o = Octree {
 			colliders: vec![],
 			collider_garbage: vec![],
 			nodes: vec![],
@@ -312,11 +372,19 @@ impl<T> Octree<T> where T: Collider {
 			bcube: BCube::empty(),
 			root: Id::none(),
 			n_colliders: 0,
-		}
+		};
+
+		o
+	}
+
+	/// Clear the octree.
+	pub fn clear(&mut self) {
+		*self = Self::new();
 	}
 
 	/// Add a point in the octree
 	pub fn add(&mut self, point: T) -> Id {
+//		println!("ADD BEGIN");
 		// Add to colliders and get the id.
 		let id = if let Some(id) = self.collider_garbage.pop() {
 			unsafe {
@@ -338,6 +406,10 @@ impl<T> Octree<T> where T: Collider {
 
 		// Increment number of colliders, and return id
 		self.n_colliders += 1;
+
+//		println!("ADD END {:?} to {}", id, self);
+//		println!("ADDED {}", {let i:usize = id.into();i});
+
 		id
 	}
 
@@ -353,6 +425,8 @@ impl<T> Octree<T> where T: Collider {
 		// Make the root bcube contain the bbox of this first point.
 		self.bcube = self[id].bbox().into();
 
+//		println!("ADD_0 {:?} / {:?}", self.bcube, self[id].bbox());
+
 		// Build the branch and add a collider.
 		let i = self.new_branch();
 		self.nodes[{ let i: usize = i.into(); i }].branch_add_collider(id).unwrap();
@@ -367,16 +441,19 @@ impl<T> Octree<T> where T: Collider {
 		assert!(self.n_colliders > 0);
 		// Get BBox
 		let bbox = self[id].bbox();
-		let bcube = self.bcube;
-		let root = self.root;
 
 		// While the bbox isn't within the root bcube, expand root bcube
-		while !bbox.collide_bcube(bcube) {
+		while !bbox.collide_bcube(self.bcube) {
 			self.grow_root(bbox);
+//			println!("GROW {:?}", self.bcube);
 		}
 
 		// Add id inside the root bcube.
+		let bcube = self.bcube;
+		let root = self.root;
 		self.add_inside(id, root, bcube);
+
+//		println!("{}", self);
 	}
 
 	/// Grow the root node
@@ -386,6 +463,7 @@ impl<T> Octree<T> where T: Collider {
 		assert!(self.nodes[{ let a: usize = self.root.into(); a }].is_branch());
 
 		// Get the old bcube center, to see which octant it goes in.
+		let old_bc = self.bcube;
 		let center = self.bcube.center;
 
 		// Extend bcube to attempt to accomodate for bbox.
@@ -393,10 +471,12 @@ impl<T> Octree<T> where T: Collider {
 		self.bcube.extend(bbox);
 
 		// Create new container branch for old root branch.
-		let ch = Node::which_child(self.bcube.center, center);
+		let ch = Node::which_child_bbox(self.bcube.center, old_bc.to_bbox()).unwrap();
 		let id = self.new_branch();
 		self.nodes[{ let a: usize = id.into(); a }].child[ch] = self.root;
 		self.root = id;
+
+//		println!("Extended: {}", self);
 	}
 
 	/// Add a point within the bounds
@@ -494,35 +574,53 @@ impl<T> Octree<T> where T: Collider {
 
 	/// Remove a point from the octree
 	pub fn remove(&mut self, id: Id) -> T {
+//		println!("REMOVE {}", {let i:usize = id.into();i});
+//		println!("REMOVE BEGIN {} from {}", { let a: usize = id.into(); a }, self);
+
 		// Must have colliders already in the octree.
 		assert!(self.n_colliders > 0);
 		// 
 		let bcube = self.bcube;
 		let root = self.root;
 		// Find and remove the collider Id from the octree.
-		// Should always be None TODO: maybe if len() is 1, octree should be emptied and actually returns None
-		assert_eq!(self.remove_inside(id, root, bcube), None);
-		// For indexing.
-		let root: usize = self.root.into();
+		let clear = self.remove_inside(id, root, bcube).is_some();
 		// Id is garbage now.
 		self.collider_garbage.push(id);
 		// Shrink root if: 1 branch, no nodes
-		if let Some(ch) = self.nodes[root].branch_is_one() {
-			// Add root to garbage.
-			self.garbage.push(self.root);
-			// Set new root
-			self.root = self.nodes[root].child[ch];
+		loop {
+			let root: usize = self.root.into();
+			if let Some(ch) = self.nodes[root].branch_is_one() {
+				// Add root to garbage.
+				self.garbage.push(self.root);
+				// Set new root
+				self.root = self.nodes[root].child[ch];
+				//
+				self.bcube = Node::child_bcube(ch, self.bcube);
+			} else {
+				break;
+			}
 		}
 		// Decrement number of colliders
 		self.n_colliders -= 1;
 
 		// Return the memory by copy.
+		let mut ret = unsafe { ::std::mem::uninitialized() };
+
 		unsafe {
-			let mut ret = ::std::mem::uninitialized();
 			::std::ptr::copy_nonoverlapping(
 				&self.colliders[{ let id: usize = id.into(); id }], &mut ret, 1);
-			ret
 		}
+
+		if clear {
+			assert_eq!(self.n_colliders, 0);
+			self.clear();
+		}
+
+//		println!("REMOVED {}", self);
+
+//		println!("REMOVE END");
+
+		ret
 	}
 
 	/// Remove an Id from the octree.
@@ -540,12 +638,18 @@ impl<T> Octree<T> where T: Collider {
 		assert!(self.nodes[node_id].is_branch());
 
 		// Could be found on a lower level.
+//		println!("R-INSIDE {:?} / {:?}", bcube, bbox);
 		if let Some(ch) = Node::which_child_bbox(bcube.center, bbox) {
+//			println!("WCHBBR {}", ch);
 			let j = self.nodes[node_id].child[ch];
 
 			if j.is_some() {
+//				println!("SOM");
+
 				// Yes, there is a branch here, where the Id is!
 				// Remove it from inside this branch.
+				let bcube = Node::child_bcube(ch, bcube);
+
 				if let Some(rm)
 					= self.remove_inside(id, j, bcube)
 				{ // Remove empty branch
@@ -558,12 +662,20 @@ impl<T> Octree<T> where T: Collider {
 					self.nodes[node_id].child[ch] =
 						Id::none();
 				}
-				None // nothing to be removed.
+
+				// If the node is empty, mark for removal.
+				if self.nodes[node_id].is_empty() {
+					Some(node_id.into())
+				} else {
+					None // nothing to be removed.
+				}
 			} else {
+//				println!("SON");
 				// No, we don't have to descend - it's here!
 				self.remove_from_branch(id, node_id)
 			}
 		} else {
+//			println!("NON");
 			// No, we can't descend - it's here!
 			self.remove_from_branch(id, node_id)
 		}
@@ -571,6 +683,8 @@ impl<T> Octree<T> where T: Collider {
 
 	/// Remove from branch, including any links that may exist.
 	fn remove_from_branch(&mut self, id: Id, node_id: usize) -> Option<Id> {
+//		println!("RFB {} {}", node_id, {let a:usize=id.into();a});
+
 		// Remove the collider
 		if self.nodes[node_id].remove_collider(id)
 			.is_some() // Found and removed
@@ -615,5 +729,53 @@ impl<T> ::std::ops::IndexMut<Id> for Octree<T> where T: Collider {
 	fn index_mut<'a>(&'a mut self, index: Id) -> &'a mut T {
 		let index: usize = index.into();
 		&mut self.colliders[index]
+	}
+}
+
+impl<T> fmt::Display for Octree<T> where T: Collider {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if self.root.is_none() {
+			write!(f, "No Root\n")?;
+		} else {
+			let root: usize = self.root.into();
+			write!(f, "Root {}:{:?}\n", root, self.bcube)?;
+		}
+
+		for i in 0..self.nodes.len() {
+			let id: Id = i.into();
+			if !self.garbage.contains(&id) {
+				writeln!(f, "{}: {}", i, self.nodes[i])?;
+				write!(f, "{}: ", i)?;
+				for j in 8..=14 { // 8
+					let index = self.nodes[i].child[j];
+					if index.is_some() {
+						write!(f, "{:?},", self[index].bbox())?;
+					}
+				}
+				writeln!(f, "")?;
+			}
+		}
+
+		write!(f, "")
+	}
+}
+
+impl<T> fmt::Debug for Octree<T> where T: Collider {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if self.root.is_none() {
+			write!(f, "No Root\n")?;
+		} else {
+			let root: usize = self.root.into();
+			write!(f, "root {}\n", root)?;
+		}
+
+		for i in 0..self.nodes.len() {
+			let id: Id = i.into();
+			if !self.garbage.contains(&id) {
+				write!(f, "{}: {:?}\n", i, self.nodes[i])?;
+			}
+		}
+
+		write!(f, "")
 	}
 }

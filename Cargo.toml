@@ -13,19 +13,19 @@
 
 [package]
 name = "ami"
-version = "0.8.2"
+version = "0.9.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
 
 license = "MIT"
 documentation = "https://docs.rs/ami"
-homepage = "http://plopgrizzly.com/ami"
+homepage = "https://plopgrizzly.com/ami"
 repository = "https://github.com/plopgrizzly/ami"
 
 readme = "readme.md"
 description = "Data structures and casting macros"
-keywords = [ "memory", "ffi", "casting", "math", "geometry" ]
+keywords = [ "memory", "octree", "math", "geometry" ]
 categories = [ "os", "data-structures", "memory-management" ]
 
 exclude = [

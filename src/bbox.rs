@@ -73,6 +73,21 @@ impl BBox {
 		self.collide(BBox::new(min, max))
 	}
 
+	/// Get which sides are the farthest away from the bbox (to extend).
+	pub(crate) fn bcube_sides(&self, bcube: BCube) -> (bool, bool, bool) {
+		let (max, min) = bcube.to_point_pair();
+		let cube = BBox::new(min, max);
+
+		let lt_dist = self.max.x - cube.max.x;
+		let rt_dist = cube.min.x - self.min.x;
+		let up_dist = self.max.y - cube.max.y;
+		let dn_dist = cube.min.y - self.min.y;
+		let nr_dist = self.max.z - cube.max.z;
+		let fr_dist = cube.min.z - self.min.z;
+
+		(rt_dist <= lt_dist, dn_dist <= up_dist, fr_dist <= nr_dist)
+	}
+
 	/// Check if `BBox` collides with point `p`.
 	pub fn collide_vec3(&self, p: Vec3) -> bool {
 		(p.x >= self.min.x) &&
@@ -94,6 +109,20 @@ impl BBox {
 			Vec3::new(self.max.x, self.min.y, self.max.z),
 			Vec3::new(self.max.x, self.max.y, self.min.z),
 			Vec3::new(self.max.x, self.max.y, self.max.z),
+		]
+	}
+
+	/// Get all 6 sides of the `BBox` as points.
+	pub fn side_points(&self) -> [Vec3; 6] {
+		let center = self.center();
+
+		[
+			Vec3::new(self.min.x, center.y, center.z),
+			Vec3::new(center.x, self.min.y, center.z),
+			Vec3::new(center.x, center.y, self.min.z),
+			Vec3::new(self.max.x, center.y, center.z),
+			Vec3::new(center.x, self.max.y, center.z),
+			Vec3::new(center.x, center.y, self.max.z),
 		]
 	}
 

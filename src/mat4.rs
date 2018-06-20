@@ -12,44 +12,44 @@ pub const IDENTITY: Mat4 = Mat4([1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
 
 /// A 4x4 Matrix
 #[derive(Clone, Copy, PartialEq)]
-pub struct Mat4(pub [f64; 16]);
+pub struct Mat4(pub [f32; 16]);
 
 impl Mat4 {
 	/// Multiply `self` by a matrix.
-	pub fn matrix(self, matrix: [f64; 16]) -> Mat4 {
+	pub fn matrix(self, matrix: [f32; 16]) -> Mat4 {
 		self * Mat4(matrix)
 	}
 
 	/// Multiply `self` by a scale transformation matrix.
-	pub fn scale<T: Into<f64>>(self, x: T, y: T, z: T) -> Mat4 {
+	pub fn scale(self, x: f32, y: f32, z: f32) -> Mat4 {
 		self.matrix([
-			x.into(), 0.0, 0.0, 0.0,
-			0.0, y.into(), 0.0, 0.0,
-			0.0, 0.0, z.into(), 0.0,
+			x,   0.0, 0.0, 0.0,
+			0.0, y,   0.0, 0.0,
+			0.0, 0.0, z,   0.0,
 			0.0, 0.0, 0.0, 1.0,
 		])
 	}
 
 	/// Multiply `self` by a translation matrix.
-	pub fn translate<T: Into<f64>>(self, x: T, y: T, z: T) -> Mat4 {
+	pub fn translate(self, x: f32, y: f32, z: f32) -> Mat4 {
 		self.matrix([
 			1.0, 0.0, 0.0, 0.0,
 			0.0, 1.0, 0.0, 0.0,
 			0.0, 0.0, 1.0, 0.0,
-			x.into(), y.into(), z.into(), 1.0,
+			x,   y,   z,   1.0,
 		])
 	}
 
 	/// Multiply `self` by a rotation matrix.  `x`, `y` and `z` are in PI
 	/// Radians.
-	pub fn rotate<T: Into<f64>>(self, x: T, y: T, z: T) -> Mat4 {
-		let num9 = z.into() * ::std::f64::consts::PI;
+	pub fn rotate(self, x: f32, y: f32, z: f32) -> Mat4 {
+		let num9 = z * ::std::f32::consts::PI;
 		let num6 = num9.sin();
 		let num5 = num9.cos();
-		let num8 = x.into() * ::std::f64::consts::PI;
+		let num8 = x * ::std::f32::consts::PI;
 		let num4 = num8.sin();
 		let num3 = num8.cos();
-		let num7 = y.into() * ::std::f64::consts::PI;
+		let num7 = y * ::std::f32::consts::PI;
 		let num2 = num7.sin();
 		let num = num7.cos();
 
@@ -73,16 +73,6 @@ impl Mat4 {
 			ny,qx,qw,qz,
 			nx,ny,nz,qw
 		])
-	}
-
-	/// Convert into an array of f32s
-	pub fn to_f32_array(&self) -> [f32; 16] {
-		[
-			self.0[0]as f32,self.0[1]as f32,self.0[2]as f32,self.0[3]as f32,
-			self.0[4]as f32,self.0[5]as f32,self.0[6]as f32,self.0[7]as f32,
-			self.0[8]as f32,self.0[9]as f32,self.0[10]as f32,self.0[11]as f32,
-			self.0[12]as f32,self.0[13]as f32,self.0[14]as f32,self.0[15]as f32,
-		]
 	}
 }
 
@@ -111,11 +101,9 @@ impl ::std::ops::Mul<Plane> for Mat4 {
 	type Output = Plane;
 
 	fn mul(self, rhs: Plane) -> Self::Output {
-		let mat = self.to_f32_array();
-
 		let facing = rhs.facing.transform_dir(self);
 		// translation vector
-		let t = Vec3::new(mat[12], mat[13], mat[14]);
+		let t = Vec3::new(self.0[12], self.0[13], self.0[14]);
 		//
 		if t == Vec3::zero() {
 			return Plane { facing, offset: rhs.offset };
@@ -162,11 +150,9 @@ impl ::std::ops::Mul<Vec3> for Mat4 {
 
 	/// Transform as a position.
 	fn mul(self, rhs: Vec3) -> Self::Output {
-		let mat = self.to_f32_array();
-
-		let x = mat[0]*rhs.x + mat[4]*rhs.y + mat[8]*rhs.z + mat[12]*1.0;
-		let y = mat[1]*rhs.x + mat[5]*rhs.y + mat[9]*rhs.z + mat[13]*1.0;
-		let z = mat[2]*rhs.x + mat[6]*rhs.y + mat[10]*rhs.z + mat[14]*1.0;
+		let x = self.0[0]*rhs.x + self.0[4]*rhs.y + self.0[8]*rhs.z + self.0[12]*1.0;
+		let y = self.0[1]*rhs.x + self.0[5]*rhs.y + self.0[9]*rhs.z + self.0[13]*1.0;
+		let z = self.0[2]*rhs.x + self.0[6]*rhs.y + self.0[10]*rhs.z + self.0[14]*1.0;
 
 		Vec3::new(x, y, z)
 	}
@@ -177,12 +163,10 @@ impl ::std::ops::Mul<Vec4> for Mat4 {
 
 	/// Transform as a position.
 	fn mul(self, rhs: Vec4) -> Self::Output {
-		let mat = self.to_f32_array();
-
-		let x = mat[0]*rhs.x + mat[4]*rhs.y + mat[8]*rhs.z + mat[12]*rhs.w;
-		let y = mat[1]*rhs.x + mat[5]*rhs.y + mat[9]*rhs.z + mat[13]*rhs.w;
-		let z = mat[2]*rhs.x + mat[6]*rhs.y + mat[10]*rhs.z + mat[14]*rhs.w;
-		let w = mat[3]*rhs.x + mat[7]*rhs.y + mat[11]*rhs.z + mat[15]*rhs.w;
+		let x = self.0[0]*rhs.x + self.0[4]*rhs.y + self.0[8]*rhs.z + self.0[12]*rhs.w;
+		let y = self.0[1]*rhs.x + self.0[5]*rhs.y + self.0[9]*rhs.z + self.0[13]*rhs.w;
+		let z = self.0[2]*rhs.x + self.0[6]*rhs.y + self.0[10]*rhs.z + self.0[14]*rhs.w;
+		let w = self.0[3]*rhs.x + self.0[7]*rhs.y + self.0[11]*rhs.z + self.0[15]*rhs.w;
 
 		Vec4::new(x, y, z, w)
 	}
