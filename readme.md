@@ -2,7 +2,6 @@
 Aldaron's Memory Interface provides data structures and casting macros.
 
 ## Features
-**ami**'s current features:
 * Casting pointers with the `cast!()` and `cast_mut!()` macros
 * Provide geometrical data structs, an do math with them
 * Automatic-size-adjusting octree
@@ -11,9 +10,11 @@ Aldaron's Memory Interface provides data structures and casting macros.
 
 ## Roadmap to 1.0 (Future Features)
 * Remove unneeded features.
-* Use num-trait for `Vec*` types
 
 ## Change Log
+### 0.10
+* Switch to using Euler for `Vec*` types.
+
 ### 0.9
 * Fixed Octree bugs.
 * Made `Mat4` use f32s instead of f64s

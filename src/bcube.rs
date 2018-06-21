@@ -49,8 +49,8 @@ impl BCube {
 
 //		println!("MAX: {} {} {}", maxx, maxy, maxz);
 
-		let min = self.center - self.half_len;
-		let max = self.center + self.half_len;
+		let min = self.center - vec3!(self.half_len);
+		let max = self.center + vec3!(self.half_len);
 
 		match (maxx, maxy, maxz) {
 			(false, false, false) => Vec3::new(min.x, min.y, min.z),

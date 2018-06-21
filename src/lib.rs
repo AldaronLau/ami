@@ -22,28 +22,25 @@
 	html_root_url = "http://plopgrizzly.com/ami/"
 )]
 
-mod mat4;
+#[macro_use]
+extern crate euler;
+
+pub use euler::*;
+
 mod bbox;
 mod bcube;
 mod frustum;
 mod octree;
 mod plane;
 mod collider;
-mod vec2;
-mod vec3;
-mod vec4;
 mod parent;
 
-pub use mat4::*;
 pub use bcube::*;
 pub use bbox::*;
 pub use frustum::*;
 pub use octree::{ Octree, Id };
 pub use plane::*;
 pub use collider::*;
-pub use vec2::*;
-pub use vec3::*;
-pub use vec4::*;
 pub use parent::*;
 
 /// Cast a constant pointer to another type.

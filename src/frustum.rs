@@ -75,7 +75,7 @@ impl Frustum {
 	/// 
 	pub fn collide_bbox(&self, bbox: BBox) -> bool {
 		for i in bbox.all_points().iter() {
-			if (*i - self.center).mag() <= self.radius {
+			if (*i - self.center).length() <= self.radius {
 				return true;
 			}
 		}
@@ -86,7 +86,7 @@ impl Frustum {
 	/// If viewing frustum collides with the bounding box.
 	pub fn collide_bcube(&self, bcube: BCube) -> bool {
 		for i in bcube.all_points().iter() {
-			if (*i - self.center).mag() <= self.radius {
+			if (*i - self.center).length() <= self.radius {
 				return true;
 			}
 		}
@@ -119,7 +119,7 @@ impl Frustum {
 
 	/// If viewing frustum collides with a point.
 	pub fn collide_point(&self, point: Vec3) -> bool {
-		(point - self.center).mag() <= self.radius
+		(point - self.center).length() <= self.radius
 
 /*		self.near.isdistpos_point(point)
 			&& self.far.isdistpos_point(point)
