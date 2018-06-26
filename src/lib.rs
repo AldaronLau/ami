@@ -14,6 +14,12 @@
 //! **ami**'s current features:
 //! * Provide geometrical data structs, and do math with them
 //! * Automatic-size-adjusting octree
+//!
+//! ## Getting started
+//! ```
+//! extern crate ami;
+//! use ami::prelude::*;
+//! ```
 
 #![warn(missing_docs)]
 #![doc(
@@ -25,7 +31,8 @@
 #[macro_use]
 extern crate euler;
 
-pub mod macros;
+#[doc(hidden)]
+pub mod prelude;
 
 mod bbox;
 mod bcube;
@@ -34,11 +41,11 @@ mod octree;
 mod plane;
 mod collider;
 
-pub use bcube::*;
-pub use bbox::*;
-pub use frustum::*;
+pub use bcube::BCube;
+pub use bbox::BBox;
+pub use frustum::Frustum;
 pub use octree::{ Octree, Id };
-pub use plane::*;
-pub use collider::*;
+pub use plane::Plane;
+pub use collider::Collider;
 
 pub use euler::{ Mat2, Mat3, Mat4, Quat, Trs, Vec2, Vec3, Vec4 };

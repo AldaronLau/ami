@@ -18,7 +18,7 @@
 
 [package]
 name = "ami"
-version = "0.11.0"
+version = "0.12.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
 	"Douglas P. Lau <doug.p.lau@gmail.com>"

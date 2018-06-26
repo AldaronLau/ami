@@ -13,6 +13,9 @@ standard library.
 * 32-bit-indexed Vec (`VecD`).
 
 ## Change Log
+### 0.12
+* Replace macros module with prelude module.
+
 ### 0.11
 * Update to euler 0.4
 * Removed Parent and Child structs (use `Rc<RefCell>` instead)
