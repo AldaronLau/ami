@@ -12,7 +12,7 @@ use Vec3;
 use BCube;
 
 #[derive(Clone, Copy, PartialEq)]
-/// A `Plane`
+/// Single-precision plane
 pub struct Plane {
 	/// A normalized directional vector for the direction the plane faces.
 	pub facing: Vec3,

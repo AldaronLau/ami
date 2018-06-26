@@ -7,12 +7,12 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 //! # [Aldaron's Memory Interface](https://crates.io/crates/ami)
-//! Aldaron's Memory Interface provides data structures and casting macros.
+//! Aldaron's Memory Interface provides useful data structures that are not in
+//! the standard library.
 //! 
 //! ## Features
 //! **ami**'s current features:
-//! * Casting pointers with the `cast!()` and `cast_mut!()` macros
-//! * Provide geometrical data structs, an do math with them
+//! * Provide geometrical data structs, and do math with them
 //! * Automatic-size-adjusting octree
 
 #![warn(missing_docs)]
@@ -25,7 +25,7 @@
 #[macro_use]
 extern crate euler;
 
-pub use euler::*;
+pub mod macros;
 
 mod bbox;
 mod bcube;
@@ -33,7 +33,6 @@ mod frustum;
 mod octree;
 mod plane;
 mod collider;
-mod parent;
 
 pub use bcube::*;
 pub use bbox::*;
@@ -41,18 +40,5 @@ pub use frustum::*;
 pub use octree::{ Octree, Id };
 pub use plane::*;
 pub use collider::*;
-pub use parent::*;
 
-/// Cast a constant pointer to another type.
-#[macro_export] macro_rules! cast {
-	($a:expr) => {
-		$a as *const _ as *const _
-	}
-}
-
-/// Cast a mutable pointer to another type.
-#[macro_export] macro_rules! cast_mut {
-	($a:expr) => {
-		$a as *mut _ as *mut _
-	}
-}
+pub use euler::{ Mat2, Mat3, Mat4, Quat, Trs, Vec2, Vec3, Vec4 };

@@ -14,7 +14,7 @@ use BBox;
 // use math::Plane;
 
 #[derive(Clone, Copy, PartialEq)]
-/// A Frustum
+/// Single-precision frustum
 pub struct Frustum {
 	/// The center of the frustum
 	pub center: Vec3,

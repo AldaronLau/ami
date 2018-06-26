@@ -11,7 +11,7 @@ use std::{ fmt, ops };
 use Vec3;
 use BCube;
 
-/// Bounding box
+/// Single-precision bounding box
 #[derive(Clone, Copy)]
 pub struct BBox {
 	pub(crate) min: Vec3,

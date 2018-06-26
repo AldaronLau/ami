@@ -1,17 +1,23 @@
 # [Aldaron's Memory Interface](https://crates.io/crates/ami)
-Aldaron's Memory Interface provides data structures and casting macros.
+Aldaron's Memory Interface provides useful data structures that are not in the
+standard library.
 
 ## Features
-* Casting pointers with the `cast!()` and `cast_mut!()` macros
-* Provide geometrical data structs, an do math with them
+* Provide geometrical data structs, and do math with them
 * Automatic-size-adjusting octree
 
 ## [Contributing](http://plopgrizzly.com/contributing/en#contributing)
 
 ## Roadmap to 1.0 (Future Features)
-* Remove unneeded features.
+* All data structures do what they are supposed to.
+* 32-bit-indexed Vec (`VecD`).
 
 ## Change Log
+### 0.11
+* Update to euler 0.4
+* Removed Parent and Child structs (use `Rc<RefCell>` instead)
+* Removed casting macros
+
 ### 0.10
 * Switch to using Euler for `Vec*` types.
 

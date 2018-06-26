@@ -18,7 +18,7 @@
 
 [package]
 name = "ami"
-version = "0.10.0"
+version = "0.11.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
 	"Douglas P. Lau <doug.p.lau@gmail.com>"
@@ -28,9 +28,9 @@ documentation = "https://docs.rs/ami"
 homepage = "https://plopgrizzly.com/ami"
 repository = "https://github.com/plopgrizzly/ami"
 readme = "readme.md"
-description = "Data structures and casting macros"
+description = "Useful data structures that are not in the standard library."
 keywords = [ "memory", "octree", "math", "geometry" ]
 categories = [ "os", "data-structures", "memory-management" ]
 
 [dependencies]
-euler = "0.3"
+euler = "0.4"

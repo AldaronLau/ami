@@ -11,7 +11,7 @@ use std::fmt;
 use Vec3;
 use BBox;
 
-/// Bounding cube
+/// Single-precision bounding cube
 #[derive(Clone, Copy, PartialEq)]
 pub struct BCube {
 	pub(crate) center: Vec3,
