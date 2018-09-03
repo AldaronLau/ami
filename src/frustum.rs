@@ -7,17 +7,13 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 
 use std::fmt;
-
-use Vec3;
-use BCube;
-use BBox;
-// use math::Plane;
+use *;
 
 #[derive(Clone, Copy, PartialEq)]
 /// Single-precision frustum
 pub struct Frustum {
 	/// The center of the frustum
-	pub center: Vec3,
+	pub center: Vector,
 	/// The radius of the frustum
 	pub radius: f32,
 	/// The fov in x
@@ -45,7 +41,7 @@ impl Frustum {
 	/// * `yrot` - Direction facing on y axis (radians).
 	/// * `wfov` - The fov on the X axis (radians).
 	/// * `hfov` - The fov on the Y axis (radians).
-	pub fn new(center: Vec3, radius: f32, xrot: f32, yrot: f32,
+	pub fn new(center: Vector, radius: f32, xrot: f32, yrot: f32,
 		wfov: f32, hfov: f32) -> Frustum
 	{
 /*		let xmax = far / (wfov / 2.0).tan();
@@ -118,7 +114,7 @@ impl Frustum {
 	}
 
 	/// If viewing frustum collides with a point.
-	pub fn collide_point(&self, point: Vec3) -> bool {
+	pub fn collide_point(&self, point: Vector) -> bool {
 		(point - self.center).length() <= self.radius
 
 /*		self.near.isdistpos_point(point)

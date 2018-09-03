@@ -7,14 +7,12 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 
 use std::fmt;
-
-use Vec3;
-use BBox;
+use *;
 
 /// Single-precision bounding cube
 #[derive(Clone, Copy, PartialEq)]
 pub struct BCube {
-	pub(crate) center: Vec3,
+	pub(crate) center: Vector,
 	pub(crate) half_len: f32,
 }
 
@@ -29,11 +27,11 @@ impl BCube {
 	pub fn empty() -> BCube {
 		let z = 0.0;
 
-		BCube { center: Vec3::new(z, z, z), half_len: -1.0 }
+		BCube { center: Vector::new(z, z, z), half_len: -1.0 }
 	}
 
 	/// Create an new `BCube` at position `p`.
-	pub fn new(p: Vec3) -> BCube {
+	pub fn new(p: Vector) -> BCube {
 		BCube { center: p, half_len: 1.0 }
 	}
 
@@ -44,29 +42,29 @@ impl BCube {
 		self.half_len *= 2.0;
 	}
 
-	fn move_center(&self, p: BBox) -> Vec3 {
+	fn move_center(&self, p: BBox) -> Vector {
 		let (maxx, maxy, maxz) = p.bcube_sides(*self);
 
 //		println!("MAX: {} {} {}", maxx, maxy, maxz);
 
-		let min = self.center - vec3!(self.half_len);
-		let max = self.center + vec3!(self.half_len);
+		let min = self.center - vector!(self.half_len);
+		let max = self.center + vector!(self.half_len);
 
 		match (maxx, maxy, maxz) {
-			(false, false, false) => Vec3::new(min.x, min.y, min.z),
-			(false, false, true) => Vec3::new(min.x, min.y, max.z),
-			(false, true, false) => Vec3::new(min.x, max.y, min.z),
-			(false, true, true) => Vec3::new(min.x, max.y, max.z),
-			(true, false, false) => Vec3::new(max.x, min.y, min.z),
-			(true, false, true) => Vec3::new(max.x, min.y, max.z),
-			(true, true, false) => Vec3::new(max.x, max.y, min.z),
-			(true, true, true) => Vec3::new(max.x, max.y, max.z),
+			(false, false, false) => Vector::new(min.x, min.y, min.z),
+			(false, false, true) => Vector::new(min.x, min.y, max.z),
+			(false, true, false) => Vector::new(min.x, max.y, min.z),
+			(false, true, true) => Vector::new(min.x, max.y, max.z),
+			(true, false, false) => Vector::new(max.x, min.y, min.z),
+			(true, false, true) => Vector::new(max.x, min.y, max.z),
+			(true, true, false) => Vector::new(max.x, max.y, min.z),
+			(true, true, true) => Vector::new(max.x, max.y, max.z),
 		}
 	}
 
 	/// Check if `BCube` contains point `p`.
-	pub fn contains(&self, p: Vec3) -> bool {
-		let Vec3 { x, y, z } = self.center;
+	pub fn contains(&self, p: Vector) -> bool {
+		let Vector { x, y, z } = self.center;
 		let hl = self.half_len;
 		(p.x >= x - hl) &&
 		(p.x < x + hl) &&
@@ -77,8 +75,8 @@ impl BCube {
 	}
 
 	/// Get two opposite points that are the bounds of the BCube.
-	pub fn to_point_pair(&self) -> (Vec3, Vec3) {
-		let half_cube = Vec3::new(self.half_len, self.half_len,
+	pub fn to_point_pair(&self) -> (Vector, Vector) {
+		let half_cube = Vector::new(self.half_len, self.half_len,
 			self.half_len);
 
 		(self.center + half_cube, self.center - half_cube)
@@ -91,24 +89,24 @@ impl BCube {
 	}
 
 	/// Get all 6 points or the `BCube`.
-	pub fn all_points(&self) -> [Vec3; 7] {
+	pub fn all_points(&self) -> [Vector; 7] {
 		let z = 0.0;
 
 		[
 			self.center,
-			self.center + Vec3::new(self.half_len, z, z),
-			self.center + Vec3::new(z, self.half_len, z),
-			self.center + Vec3::new(z, z, self.half_len),
-			self.center + Vec3::new(-self.half_len, z, z),
-			self.center + Vec3::new(z, -self.half_len, z),
-			self.center + Vec3::new(z, z, -self.half_len),
+			self.center + Vector::new(self.half_len, z, z),
+			self.center + Vector::new(z, self.half_len, z),
+			self.center + Vector::new(z, z, self.half_len),
+			self.center + Vector::new(-self.half_len, z, z),
+			self.center + Vector::new(z, -self.half_len, z),
+			self.center + Vector::new(z, z, -self.half_len),
 		]
 	}
 
 	/// Get a positive and negative pair of opposite points that are the
 	/// bounds of the BCube, based around a normal.
-	pub fn pn_pair_from_normal(&self, normal: Vec3)
-		-> (Vec3, Vec3)
+	pub fn pn_pair_from_normal(&self, normal: Vector)
+		-> (Vector, Vector)
 	{
 		let mut pvertex = self.center;
 		let mut nvertex = self.center;

@@ -7,15 +7,13 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 
 use std::{ fmt, ops };
-
-use Vec3;
-use BCube;
+use *;
 
 /// Single-precision bounding box
 #[derive(Clone, Copy)]
 pub struct BBox {
-	pub(crate) min: Vec3,
-	pub(crate) max: Vec3,
+	pub(crate) min: Vector,
+	pub(crate) max: Vector,
 }
 
 impl fmt::Debug for BBox {
@@ -24,18 +22,18 @@ impl fmt::Debug for BBox {
 	}
 }
 
-impl ops::Sub<Vec3> for BBox {
+impl ops::Sub<Vector> for BBox {
 	type Output = BBox;
 
-	fn sub(self, other: Vec3) -> Self::Output {
+	fn sub(self, other: Vector) -> Self::Output {
 		BBox::new(self.min - other, self.max - other)
 	}
 }
 
-impl ops::Add<Vec3> for BBox {
+impl ops::Add<Vector> for BBox {
 	type Output = BBox;
 
-	fn add(self, other: Vec3) -> Self::Output {
+	fn add(self, other: Vector) -> Self::Output {
 		BBox::new(self.min + other, self.max + other)
 	}
 }
@@ -53,7 +51,7 @@ impl Into<BCube> for BBox {
 
 impl BBox {
 	/// Create an new `BBox` at position `p`.
-	pub fn new(min: Vec3, max: Vec3) -> BBox {
+	pub fn new(min: Vector, max: Vector) -> BBox {
 		assert!(min.x <= max.x);
 		assert!(min.y <= max.y);
 		assert!(min.z <= max.z);
@@ -93,7 +91,7 @@ impl BBox {
 	}
 
 	/// Check if `BBox` collides with point `p`.
-	pub fn collide_vec3(&self, p: Vec3) -> bool {
+	pub fn collide_vec3(&self, p: Vector) -> bool {
 		(p.x >= self.min.x) &&
 		(p.x <= self.max.x) &&
 		(p.y >= self.min.y) &&
@@ -103,36 +101,36 @@ impl BBox {
 	}
 
 	/// Get all 8 points of the `BBox`.
-	pub fn all_points(&self) -> [Vec3; 8] {
+	pub fn all_points(&self) -> [Vector; 8] {
 		[
-			Vec3::new(self.min.x, self.min.y, self.min.z),
-			Vec3::new(self.min.x, self.min.y, self.max.z),
-			Vec3::new(self.min.x, self.max.y, self.min.z),
-			Vec3::new(self.min.x, self.max.y, self.max.z),
-			Vec3::new(self.max.x, self.min.y, self.min.z),
-			Vec3::new(self.max.x, self.min.y, self.max.z),
-			Vec3::new(self.max.x, self.max.y, self.min.z),
-			Vec3::new(self.max.x, self.max.y, self.max.z),
+			Vector::new(self.min.x, self.min.y, self.min.z),
+			Vector::new(self.min.x, self.min.y, self.max.z),
+			Vector::new(self.min.x, self.max.y, self.min.z),
+			Vector::new(self.min.x, self.max.y, self.max.z),
+			Vector::new(self.max.x, self.min.y, self.min.z),
+			Vector::new(self.max.x, self.min.y, self.max.z),
+			Vector::new(self.max.x, self.max.y, self.min.z),
+			Vector::new(self.max.x, self.max.y, self.max.z),
 		]
 	}
 
 	/// Get all 6 sides of the `BBox` as points.
-	pub fn side_points(&self) -> [Vec3; 6] {
+	pub fn side_points(&self) -> [Vector; 6] {
 		let center = self.center();
 
 		[
-			Vec3::new(self.min.x, center.y, center.z),
-			Vec3::new(center.x, self.min.y, center.z),
-			Vec3::new(center.x, center.y, self.min.z),
-			Vec3::new(self.max.x, center.y, center.z),
-			Vec3::new(center.x, self.max.y, center.z),
-			Vec3::new(center.x, center.y, self.max.z),
+			Vector::new(self.min.x, center.y, center.z),
+			Vector::new(center.x, self.min.y, center.z),
+			Vector::new(center.x, center.y, self.min.z),
+			Vector::new(self.max.x, center.y, center.z),
+			Vector::new(center.x, self.max.y, center.z),
+			Vector::new(center.x, center.y, self.max.z),
 		]
 	}
 
 	/// Get the center of the `BBox`.
-	pub fn center(&self) -> Vec3 {
-		Vec3::new(
+	pub fn center(&self) -> Vector {
+		Vector::new(
 			(self.min.x + self.max.x) / 2.0,
 			(self.min.y + self.max.y) / 2.0,
 			(self.min.z + self.max.z) / 2.0,

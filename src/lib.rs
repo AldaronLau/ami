@@ -18,7 +18,7 @@
 //! ## Getting started
 //! ```
 //! extern crate ami;
-//! use ami::prelude::*;
+//! use ami::*;
 //! ```
 
 #![warn(missing_docs)]
@@ -28,24 +28,26 @@
 	html_root_url = "http://plopgrizzly.com/ami/"
 )]
 
+extern crate cgmath;
+
 #[macro_use]
-extern crate euler;
-
-#[doc(hidden)]
-pub mod prelude;
-
+mod macros;
 mod bbox;
 mod bcube;
 mod frustum;
 mod octree;
 mod plane;
 mod collider;
+mod vector;
+mod matrix;
+mod rotation;
 
 pub use bcube::BCube;
 pub use bbox::BBox;
 pub use frustum::Frustum;
-pub use octree::{ Octree, Id };
+pub use octree::{Octree, Id};
 pub use plane::Plane;
 pub use collider::Collider;
-
-pub use euler::{ Mat2, Mat3, Mat4, Quat, Trs, Vec2, Vec3, Vec4 };
+pub use vector::Vector;
+pub use matrix::Matrix;
+pub use rotation::Rotation;

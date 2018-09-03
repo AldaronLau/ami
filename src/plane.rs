@@ -8,14 +8,14 @@
 
 use std::fmt;
 
-use Vec3;
+use Vector;
 use BCube;
 
 #[derive(Clone, Copy, PartialEq)]
 /// Single-precision plane
 pub struct Plane {
 	/// A normalized directional vector for the direction the plane faces.
-	pub facing: Vec3,
+	pub facing: Vector,
 	/// The offset of the plane from the origin in the direction of `facing`
 	pub offset: f32,
 }
@@ -28,12 +28,12 @@ impl fmt::Debug for Plane {
 
 impl Plane {
 	/// Create a new plane from directional vector, and offset from origin.
-	pub fn new(dir: Vec3, ofs: f32) -> Plane {
+	pub fn new(dir: Vector, ofs: f32) -> Plane {
 		Plane { facing: dir.normalize(), offset: ofs }
 	}
 
 	/// Returns true if distance from Plane to point is positive.
-	pub fn isdistpos_point(&self, p: Vec3) -> bool {
+	pub fn isdistpos_point(&self, p: Vector) -> bool {
 		(self.facing.x * (p.x - (self.facing.x * self.offset)))
 			+ (self.facing.y * (p.y - (self.facing.y * self.offset)))
 			+ (self.facing.z * (p.z - (self.facing.z * self.offset)))
@@ -84,16 +84,16 @@ fn test_plane_distpos() {
 		.translate(500.0, -100.0, -115.0)
 		.rotate(1.0, 2.0, 0.3);
 
-	let a = Plane::new(t * Vec3::new(0.0, 1.0, 0.0), Vec3::new(0.0, 1.0, 0.0).transform_dir(t));
-	let b = Plane::new(t * Vec3::new(0.0, 0.0, 1.0), Vec3::new(0.0, 0.0, -1.0).transform_dir(t));
-	let c = Plane::new(t * Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 1.0).transform_dir(t));
+	let a = Plane::new(t * Vector::new(0.0, 1.0, 0.0), Vector::new(0.0, 1.0, 0.0).transform_dir(t));
+	let b = Plane::new(t * Vector::new(0.0, 0.0, 1.0), Vector::new(0.0, 0.0, -1.0).transform_dir(t));
+	let c = Plane::new(t * Vector::new(0.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0).transform_dir(t));
 
-	assert!(a.isdistpos_point(t * Vec3::new(-12.0, 2.0, 0.0)) == true);
-	assert!(a.isdistpos_point(t * Vec3::new(-12.0, 0.0, 0.0)) == false);
-	assert!(b.isdistpos_point(t * Vec3::new(15.0, 0.0, -12.0)) == true);
-	assert!(b.isdistpos_point(t * Vec3::new(15.0, 0.0, 12.0)) == false);
-	assert!(c.isdistpos_point(t * Vec3::new(5.0, -10.0, 0.5)) == true);
-	assert!(c.isdistpos_point(t * Vec3::new(-5.0, -10.0, -0.5)) == false);
+	assert!(a.isdistpos_point(t * Vector::new(-12.0, 2.0, 0.0)) == true);
+	assert!(a.isdistpos_point(t * Vector::new(-12.0, 0.0, 0.0)) == false);
+	assert!(b.isdistpos_point(t * Vector::new(15.0, 0.0, -12.0)) == true);
+	assert!(b.isdistpos_point(t * Vector::new(15.0, 0.0, 12.0)) == false);
+	assert!(c.isdistpos_point(t * Vector::new(5.0, -10.0, 0.5)) == true);
+	assert!(c.isdistpos_point(t * Vector::new(-5.0, -10.0, -0.5)) == false);
 }*/
 
 /*#[test]
@@ -104,53 +104,53 @@ fn test_bcube_in_plane() {
 		.rotate(1.0, 2.0, 0.3);
 
 	// Plane is behind box	
-	let a = Plane::new(Vec3::new(0.0, 0.0, 1.0)/*.transform_dir(t)*/, -2.5);
+	let a = Plane::new(Vector::new(0.0, 0.0, 1.0)/*.transform_dir(t)*/, -2.5);
 	// Plane intersects box
-	let b = Plane::new(Vec3::new(0.0, 0.0, 1.0)/*.transform_dir(t)*/, 0.0);
+	let b = Plane::new(Vector::new(0.0, 0.0, 1.0)/*.transform_dir(t)*/, 0.0);
 	// Plane is in front of box, plz cull
-	let c = Plane::new(Vec3::new(0.0, 0.0, 1.0)/*.transform_dir(t)*/, 2.5);
+	let c = Plane::new(Vector::new(0.0, 0.0, 1.0)/*.transform_dir(t)*/, 2.5);
 	// Plane intersects box at 45° angle
-	let d = Plane::new(Vec3::new(0.0, 0.0, 1.0).transform_dir(
+	let d = Plane::new(Vector::new(0.0, 0.0, 1.0).transform_dir(
 		::Transform::new()
 			.rotate(0.0, -0.5, 0.0)), 0.0);
 	// Plane intersects box at 135° angle
-	let e = Plane::new(Vec3::new(0.0, 0.0, 1.0).transform_dir(
+	let e = Plane::new(Vector::new(0.0, 0.0, 1.0).transform_dir(
 		::Transform::new()
 			.rotate(0.0, -1.5, 0.0)), 0.0);
 	// Plane is behind box from 45° angle.
-	let f = Plane::new(Vec3::new(0.0, 0.0, 1.0).transform_dir(
+	let f = Plane::new(Vector::new(0.0, 0.0, 1.0).transform_dir(
 		::Transform::new()
 			.rotate(0.0, 0.25, 0.0)), -2.5);
 	// Plane is behind box from 135° angle.	
-	let g = Plane::new(Vec3::new(0.0, 0.0, 1.0).transform_dir(
+	let g = Plane::new(Vector::new(0.0, 0.0, 1.0).transform_dir(
 		::Transform::new()
 			.rotate(0.0, 0.75, 0.0)), -2.5);
 	// Plane is behind box from 225° angle.
-	let h = Plane::new(Vec3::new(0.0, 0.0, 1.0).transform_dir(
+	let h = Plane::new(Vector::new(0.0, 0.0, 1.0).transform_dir(
 		::Transform::new()
 			.rotate(0.0, 1.25, 0.0)), -2.5);
 	// Plane is behind box from 315° angle.
-	let i = Plane::new(Vec3::new(0.0, 0.0, 1.0).transform_dir(
+	let i = Plane::new(Vector::new(0.0, 0.0, 1.0).transform_dir(
 		::Transform::new()
 			.rotate(0.0, 1.75, 0.0)), -2.5);
 
-	assert!(a.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(b.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(c.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == false);
-	assert!(d.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(e.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(f.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(g.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(h.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
-	assert!(i.isdistpos_bcube(BCube::new(Vec3::new(0, 0.0, 0.0))) == true);
+	assert!(a.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
+	assert!(b.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
+	assert!(c.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == false);
+	assert!(d.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
+	assert!(e.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
+	assert!(f.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
+	assert!(g.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
+	assert!(h.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
+	assert!(i.isdistpos_bcube(BCube::new(Vector::new(0, 0.0, 0.0))) == true);
 
-	assert!(a.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(b.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(c.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == false);
-	assert!(d.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(e.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(f.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(g.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(h.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
-	assert!(i.isdistpos_bcube(BCube::new(Vec3::new(0, -2.0, 0.0))) == true);
+	assert!(a.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
+	assert!(b.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
+	assert!(c.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == false);
+	assert!(d.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
+	assert!(e.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
+	assert!(f.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
+	assert!(g.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
+	assert!(h.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
+	assert!(i.isdistpos_bcube(BCube::new(Vector::new(0, -2.0, 0.0))) == true);
 }*/

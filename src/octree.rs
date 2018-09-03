@@ -7,13 +7,7 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 
 use std::fmt;
-// use std::cmp::Ordering;
-
-use Vec3;
-use BCube;
-use BBox;
-use Collider;
-// use Frustum;
+use *;
 
 /// An octree is a DAG that can quickly search for points in 3D space.
 ///
@@ -279,13 +273,13 @@ impl Node {
 	}
 
 	/// Determine which child for a branch point (2)
-	fn which_child2(c: Vec3, p: Vec3) -> [bool; 3] {
+	fn which_child2(c: Vector, p: Vector) -> [bool; 3] {
 		[p.x < c.x, p.y < c.y, p.z < c.z]
 	}
 
 	/// Determine which child for a branch bbox, if there is one it fully
 	/// fits into.
-	fn which_child_bbox(c: Vec3, mut p: BBox) -> Option<usize> {
+	fn which_child_bbox(c: Vector, mut p: BBox) -> Option<usize> {
 		if p.min.x >= c.x - ::std::f32::EPSILON && p.min.x <= c.x + ::std::f32::EPSILON {
 //			println!("MATCHED minX");
 			p.min.x = p.max.x;
@@ -334,16 +328,16 @@ impl Node {
 	}
 
 	/// Calculate the center of a child node
-	fn child_center(ch: usize, c: Vec3, h: f32) -> Vec3 {
+	fn child_center(ch: usize, c: Vector, h: f32) -> Vector {
 		match ch {
-			0 => Vec3::new(c.x - h, c.y - h, c.z - h),
-			1 => Vec3::new(c.x - h, c.y - h, c.z + h),
-			2 => Vec3::new(c.x - h, c.y + h, c.z - h),
-			3 => Vec3::new(c.x - h, c.y + h, c.z + h),
-			4 => Vec3::new(c.x + h, c.y - h, c.z - h),
-			5 => Vec3::new(c.x + h, c.y - h, c.z + h),
-			6 => Vec3::new(c.x + h, c.y + h, c.z - h),
-			7 => Vec3::new(c.x + h, c.y + h, c.z + h),
+			0 => Vector::new(c.x - h, c.y - h, c.z - h),
+			1 => Vector::new(c.x - h, c.y - h, c.z + h),
+			2 => Vector::new(c.x - h, c.y + h, c.z - h),
+			3 => Vector::new(c.x - h, c.y + h, c.z + h),
+			4 => Vector::new(c.x + h, c.y - h, c.z - h),
+			5 => Vector::new(c.x + h, c.y - h, c.z + h),
+			6 => Vector::new(c.x + h, c.y + h, c.z - h),
+			7 => Vector::new(c.x + h, c.y + h, c.z + h),
 			a => panic!("ch must be 0-7, not {}", a),
 		}
 	}
