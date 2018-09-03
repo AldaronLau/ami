@@ -1,20 +1,17 @@
-# "ami" - Aldaron's Memory Interface
-#                             _        _
-#                            /@\——————/@\
-# .———  .                   |   o    o   |     .————      .            .
-# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
-# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
-# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
-# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
-# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
-#                 |        \              /                              __/
-#                           ¯————————————¯
-#
-# Copyright Douglas P. Lau 2017.
-# Copyright Jeron A. Lau 2017 - 2018.
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
+# Copyright Jeron A. Lau 2017-2018.
+# Copyright Douglas Lau 2017
+# Dual-licensed under either the MIT License or the Boost Software License,
+# Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt)
+#
+# XXXX  X                    /5\——————/5\       XXXX      X           X
+# X   X X   XXX   XXXX      |   0    0   |     X      XXX   XXXX XXXX X X   X
+# X   X X  X   X  X   X  /"\|     <>     |/"\  X      X   X    X    X X X   X
+# XXXX  X  X   X  X   X  \  \\_  ====  _//  /  X   XX X   X   X    X  X  X X
+# X     X  X   X  XXXX    \_              _/   X    X X   X  X    X   X   X
+# X     X   XXX   X       / \            / \    XXXX  X   X XXXX XXXX X   X
+#                 X       \                /                            XX
+#                          --____________--
 
 [package]
 name = "ami"
@@ -23,9 +20,9 @@ authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
 	"Douglas Lau <doug.p.lau@gmail.com>",
 ]
-license = "BSL-1.0"
+license = "MIT / BSL-1.0"
 documentation = "https://docs.rs/ami"
-homepage = "https://plopgrizzly.com/ami"
+homepage = "https://gitlab.com/plopgrizzly/adi"
 repository = "https://github.com/plopgrizzly/ami"
 readme = "README.md"
 description = "Useful data structures that are not in the standard library."

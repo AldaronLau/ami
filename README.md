@@ -1,9 +1,13 @@
+[![Plop Grizzly](https://plopgrizzly.com/images/logo-bar.png)](https://plopgrizzly.com)
+
 # [Aldaron's Memory Interface](https://crates.io/crates/ami)
 Aldaron's Memory Interface provides useful data structures that are not in the
 standard library.
 
 ## Features
-* Provide geometrical data structs, and do math with them
+* 3D Vector Math
+* 4D Matrix Math
+* Other geometrical math, and related structures
 * Automatic-size-adjusting octree
 
 ## [Contributing](http://plopgrizzly.com/contributing/en#contributing)
@@ -13,6 +17,12 @@ standard library.
 * 32-bit-indexed Vec (`VecD`).
 
 ## Change Log
+### 0.13
+* No longer depends on `euler`, but a lower level crate `cgmath`.
+* Rename `vec3!` to `vector!`, and `Vec3` to `Vector`.
+* Rename `mat4!` to `matrix!`, and `Mat4` to `Matrix`.
+* Now uses proper quaternion math
+
 ### 0.12
 * Replace macros module with prelude module.
 
@@ -27,12 +37,3 @@ standard library.
 ### 0.9
 * Fixed Octree bugs.
 * Made `Mat4` use f32s instead of f64s
-
-### 0.8
-* Octree now uses `BBox` instead of Vec3 for positioning.
-* Renamed `BBox` to `BCube`.
-* Added `BBox`.
-* Renamed `Pos` to `Collider`.
-* A few other changes.
-
-## Developed by [Plop Grizzly](http://plopgrizzly.com)

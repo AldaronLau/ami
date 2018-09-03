@@ -1,9 +1,7 @@
-// "ami" - Aldaron's Memory Interface
-//
-// Copyright Douglas P. Lau 2017.
-// Copyright Jeron A. Lau 2017 - 2018.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at
+// Copyright Jeron A. Lau 2017-2018.
+// Copyright Douglas Lau 2017
+// Dual-licensed under either the MIT License or the Boost Software License,
+// Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
 use cgmath;
@@ -58,35 +56,50 @@ impl Matrix {
 	/// Translate.
 	#[inline(always)]
 	pub fn t(self, translate: Vector) -> Self {
-		let t: [[f32; 4]; 4] = cgmath::Matrix4::from_translation(
-			cgmath::Vector3::new(
-				translate.x, translate.y, translate.z
-			)
-		).into();
-
-		self.m(Matrix::from(t))
+		self.m(Matrix::new(
+			1.0, 0.0, 0.0, 0.0,
+			0.0, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			translate.x, translate.y, translate.z, 1.0,
+		))
 	}
 
 	/// Scale.
 	#[inline(always)]
 	pub fn s(self, scale: Vector) -> Self {
-		let t: [[f32; 4]; 4] = cgmath::Matrix4::from_nonuniform_scale(
-			scale.x, scale.y, scale.z
-		).into();
-
-		self.m(Matrix::from(t))
+		self.m(Matrix::new(
+			scale.x, 0.0, 0.0, 0.0,
+			0.0, scale.y, 0.0, 0.0,
+			0.0, 0.0, scale.z, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		))
 	}
 
 	/// Rotate Quaternion (axis, angle).
 	#[inline(always)]
 	pub fn r(self, rotation: Rotation) -> Self {
-		let t: [[f32; 4]; 4] = cgmath::Matrix4::from(
-			cgmath::Quaternion::new(
-				rotation.s, rotation.x, rotation.y, rotation.z
-			)
-		).into();
+		let x2 = rotation.x + rotation.x;
+		let y2 = rotation.y + rotation.y;
+		let z2 = rotation.z + rotation.z;
 
-		self.m(Matrix::from(t))
+		let xx2 = x2 * rotation.x;
+		let xy2 = x2 * rotation.y;
+		let xz2 = x2 * rotation.z;
+
+		let yy2 = y2 * rotation.y;
+		let yz2 = y2 * rotation.z;
+		let zz2 = z2 * rotation.z;
+
+		let sy2 = y2 * rotation.s;
+		let sz2 = z2 * rotation.s;
+		let sx2 = x2 * rotation.s;
+
+		self.m(Matrix::new(
+			1.0 - yy2 - zz2, xy2 + sz2, xz2 - sy2, 0.0,
+			xy2 - sz2, 1.0 - xx2 - zz2, yz2 + sx2, 0.0,
+			xz2 + sy2, yz2 - sx2, 1.0 - xx2 - yy2, 0.0,
+			0.0, 0.0, 0.0, 1.0,
+		))
 	}
 
 	/// Multiply by a custom matrix
