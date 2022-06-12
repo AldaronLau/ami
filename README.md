@@ -1,6 +1,10 @@
-[![Plop Grizzly](https://plopgrizzly.com/images/logo-bar.png)](https://plopgrizzly.com)
-
 # [Aldaron's Memory Interface](https://crates.io/crates/ami)
+This project has been discontinued, I suggest you use [cgmath](https://crates.io/crates/cgmath) instead.
+
+Contact me at aldaronlau@gmail.com if you wish to reclaim the crate name.
+
+-----
+
 Aldaron's Memory Interface provides useful data structures that are not in the
 standard library.
 
